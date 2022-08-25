@@ -1,0 +1,94 @@
+group 'com.LondonX.clash_flt'
+version '1.0-SNAPSHOT'
+
+buildscript {
+    ext.kotlin_version = '1.6.10'
+    repositories {
+        google()
+        mavenCentral()
+    }
+
+    dependencies {
+        classpath 'com.android.tools.build:gradle:7.1.2'
+        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
+        classpath "org.jetbrains.kotlin:kotlin-serialization:$kotlin_version"
+    }
+}
+
+rootProject.allprojects {
+    repositories {
+        google()
+        mavenCentral()
+    }
+}
+
+apply plugin: 'com.android.library'
+apply plugin: 'kotlin-android'
+apply plugin: 'kotlinx-serialization'
+
+def geoipDatabaseUrl =
+        "https://github.com/Dreamacro/maxmind-geoip/releases/latest/download/Country.mmdb"
+def geoipInvalidate = Duration.ofDays(0)
+File geoipOutput = file(buildDir.path + "/intermediates/golang_blob")
+
+android {
+    compileSdkVersion 31
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
+
+    kotlinOptions {
+        jvmTarget = '1.8'
+    }
+
+    sourceSets {
+        main.java.srcDirs += 'src/main/kotlin'
+    }
+
+    defaultConfig {
+        minSdkVersion 21
+    }
+}
+
+dependencies {
+    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
+    implementation "org.jetbrains.kotlinx:kotlinx-coroutines-android:1.6.4"
+    implementation "org.jetbrains.kotlinx:kotlinx-serialization-json:1.4.0"
+    implementation "androidx.core:core-ktx:1.8.0"
+}
+
+task("downloadGeoipDatabase") {
+    File databaseFile = file(geoipOutput.path + "/Country.mmdb")
+    File moduleFile = file(geoipOutput.path + "/go.mod")
+    File sourceFile = file(geoipOutput.path + "/blob.go")
+
+    def moduleContent = 'module "cfa/blob"'
+
+    def sourceContent = """
+package blob
+
+import _ "embed"
+
+//go:embed Country.mmdb
+var GeoipDatabase []byte
+    """
+
+    outputs.dir(geoipOutput)
+
+    onlyIf {
+        System.currentTimeMillis() - databaseFile.lastModified() > geoipInvalidate.toMillis()
+    }
+
+    doLast {
+        geoipOutput.mkdirs()
+        moduleFile.text = moduleContent
+        sourceFile.text = sourceContent
+        def url = uri(geoipDatabaseUrl).toURL()
+        def ips = url.openStream()
+        def ops = new FileOutputStream(databaseFile)
+        ops << ips
+        print "downloaded geoip database: $databaseFile"
+    }
+}
