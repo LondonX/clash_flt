@@ -2,13 +2,14 @@ import 'package:flutter/material.dart';
 
 import 'entity/proxy.dart';
 
-class ClashState extends ChangeNotifier {
-  Proxy? _selectedProxy;
-  set selectedProxy(Proxy? target) {
-    if (_selectedProxy == target) return;
-    _selectedProxy = target;
-    notifyListeners();
-  }
+class ClashState {
+  final isRunning = ValueNotifier<Toggle>(Toggle.disabling);
+  final selectedProxy = ValueNotifier<Proxy?>(null);
+}
 
-  Proxy? get selectedProxy => _selectedProxy;
+enum Toggle {
+  enabled,
+  disabled,
+  enabling,
+  disabling,
 }

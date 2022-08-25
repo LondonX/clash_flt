@@ -1,5 +1,6 @@
 package com.LondonX.clash_flt.util
 
+import com.github.kr328.clash.core.Clash
 import com.github.kr328.clash.core.model.*
 
 
@@ -65,6 +66,43 @@ fun String?.toProxyType(): Proxy.Type {
         "loadBalance" -> Proxy.Type.LoadBalance
         else -> Proxy.Type.Unknown
     }
+}
+
+fun TunnelState.toMap(): Map<String, Any> {
+    return mapOf("mode" to mode.toDartEnum())
+}
+
+fun String?.toProviderType(): Provider.Type? {
+    return when (this) {
+        "proxy" -> Provider.Type.Proxy
+        "rule" -> Provider.Type.Rule
+        else -> null
+    }
+}
+
+fun String?.toProviderVehicleType(): Provider.VehicleType? {
+    return when (this) {
+        "http" -> Provider.VehicleType.HTTP
+        "file" -> Provider.VehicleType.File
+        "compatible" -> Provider.VehicleType.Compatible
+        else -> null
+    }
+}
+
+fun String?.toOverrideSlot(): Clash.OverrideSlot? {
+    return when (this) {
+        "persist" -> Clash.OverrideSlot.Persist
+        "session" -> Clash.OverrideSlot.Session
+        else -> null
+    }
+}
+
+fun LogMessage.toMap(): Map<String, Any> {
+    return mapOf(
+        "level" to level.toDartEnum(),
+        "message" to message,
+        "time" to time.time,
+    )
 }
 
 fun Enum<*>.toDartEnum(): String {

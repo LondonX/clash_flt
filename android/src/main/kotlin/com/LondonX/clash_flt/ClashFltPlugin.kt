@@ -9,6 +9,7 @@ import android.os.Looper
 import androidx.annotation.NonNull
 import com.LondonX.clash_flt.service.ClashVpnService
 import com.LondonX.clash_flt.util.toMap
+import com.LondonX.clash_flt.util.toProviderType
 import com.LondonX.clash_flt.util.toProxySort
 import com.LondonX.clash_flt.util.toProxyType
 import com.github.kr328.clash.common.Global
@@ -33,6 +34,7 @@ class ClashFltPlugin : FlutterPlugin, MethodCallHandler, ActivityAware,
     private lateinit var channel: MethodChannel
     private val uiHandler = Handler(Looper.getMainLooper())
     private val scope = MainScope()
+    private val logSubs = hashMapOf<String, Job>()
 
     override fun onAttachedToEngine(@NonNull flutterPluginBinding: FlutterPlugin.FlutterPluginBinding) {
         Global.init(flutterPluginBinding.applicationContext as Application)
@@ -43,6 +45,76 @@ class ClashFltPlugin : FlutterPlugin, MethodCallHandler, ActivityAware,
     override fun onMethodCall(@NonNull call: MethodCall, @NonNull result: Result) {
         val callbackKey = call.argument<String>("callbackKey")
         when (call.method) {
+            "reset" -> {
+                Clash.reset()
+                result.success(null)
+            }
+            "forceGc" -> {
+                Clash.forceGc()
+                result.success(null)
+            }
+            "suspendCore" -> {
+                val suspended = call.argument<Boolean>("suspended")!!
+                Clash.suspendCore(suspended)
+                result.success(null)
+            }
+            "queryTunnelState" -> {
+                val tunState = Clash.queryTunnelState()
+                result.success(tunState.toMap())
+            }
+            "queryTrafficNow" -> {
+                val traffic: Long = Clash.queryTrafficNow()
+                result.success(traffic)
+            }
+            "queryTrafficTotal" -> {
+                val traffic: Long = Clash.queryTrafficTotal()
+                result.success(traffic)
+            }
+            "notifyDnsChanged" -> {
+                val path = call.argument<List<String>>("dns")!!
+                Clash.notifyDnsChanged(path)
+                result.success(null)
+            }
+            "notifyTimeZoneChanged" -> {
+                val name = call.argument<String>("name")!!
+                val offset = call.argument<Int>("offset")!!
+                Clash.notifyTimeZoneChanged(name, offset)
+                result.success(null)
+            }
+            "notifyInstalledAppsChanged" -> {
+                result.notImplemented()
+            }
+            "healthCheck" -> {
+                val name = call.argument<String>("name")!!
+                Clash.healthCheck(name)
+                result.success(null)
+            }
+            "healthCheckAll" -> {
+                Clash.healthCheckAll()
+                result.success(null)
+            }
+            "queryOverride" -> {
+                result.notImplemented()
+            }
+            "installSideloadGeoip" -> {
+                val path = call.argument<String>("path")!!
+                val data = File(path).readBytes()
+                Clash.installSideloadGeoip(data)
+                result.success(null)
+            }
+            "subscribeLogcat" -> {
+                logSubs[callbackKey]?.cancel()
+                logSubs[callbackKey!!] = scope.launch {
+                    while (isActive) {
+                        val message = Clash.subscribeLogcat().receive()
+                        callbackWithKey(callbackKey, message.toMap())
+                    }
+                }
+            }
+            "unsubscribeLogcat" -> {
+                logSubs[callbackKey]?.cancel()
+                logSubs.remove(callbackKey)
+            }
             "fetchAndValid" -> {
                 val path = call.argument<String>("path")!!
                 val url = call.argument<String>("url")!!
@@ -61,6 +133,15 @@ class ClashFltPlugin : FlutterPlugin, MethodCallHandler, ActivityAware,
             "queryProviders" -> {
                 val providers = Clash.queryProviders()
                 result.success(providers.map { it.toMap() })
+            }
+            "updateProvider" -> {
+                val name = call.argument<String>("name")!!
+                val type = call.argument<String>("type")?.toProviderType() ?: return result.error(
+                    "Clash.updateProvider",
+                    "Supported type!!!",
+                    null,
+                )
+                Clash.updateProvider(type, name)
             }
             "queryGroupNames" -> {
                 val excludeNotSelectable = call.argument<Boolean>("excludeNotSelectable")!!
@@ -93,6 +174,11 @@ class ClashFltPlugin : FlutterPlugin, MethodCallHandler, ActivityAware,
                 clashServiceScope(result) {
                     val patched = it.patchSelector(groupName, proxy)
                     result.success(patched)
+                }
+            }
+            "isClashRunning" -> {
+                clashServiceScope(result) {
+                    result.success(it.isRunning())
                 }
             }
             "startClash" -> {

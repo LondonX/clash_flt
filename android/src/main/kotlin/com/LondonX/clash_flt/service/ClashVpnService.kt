@@ -58,7 +58,8 @@ class ClashVpnService : VpnService() {
         return Clash.patchSelector(groupName, proxy.name)
     }
 
-    private var isProxying = false
+    private var isRunning = false
+    fun isRunning() = isRunning
 
     /**
      * start Clash VPN
@@ -66,7 +67,7 @@ class ClashVpnService : VpnService() {
      * @see Clash.startHttp
      */
     fun startClash() {
-        if (isProxying) return
+        if (isRunning) return
         val vpnFd = setupVpn()
         Clash.startTun(
             fd = vpnFd.fd,
@@ -76,7 +77,7 @@ class ClashVpnService : VpnService() {
             markSocket = ::protect,
             querySocketUid = this::queryUid
         )
-        isProxying = true
+        isRunning = true
     }
 
     /**
@@ -87,7 +88,7 @@ class ClashVpnService : VpnService() {
     fun stopClash() {
         Clash.stopTun()
         Clash.stopHttp()
-        isProxying = false
+        isRunning = false
     }
 
     private fun setupVpn(): ParcelFileDescriptor {

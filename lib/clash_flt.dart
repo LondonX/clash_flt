@@ -1,21 +1,31 @@
+import 'dart:io';
+
 import 'package:clash_flt/clash_state.dart';
 import 'package:clash_flt/entity/proxy.dart';
 import "package:flutter/services.dart";
 
 import 'entity/fetch_status.dart';
+import 'entity/log_mesage.dart';
 import 'entity/provider.dart';
 import 'entity/proxy_group.dart';
+import 'entity/tunnel_state.dart';
 
 class ClashFlt {
   static ClashFlt? _instance;
   static ClashFlt get instance => _instance ?? ClashFlt._();
   ClashFlt._() {
     _channel.setMethodCallHandler(_onMethodCall);
+    _syncState();
   }
 
   final _channel = const MethodChannel("clash_flt");
   final Map<String, Function> _callbackPool = {};
   final state = ClashState();
+
+  _syncState() async {
+    state.isRunning.value =
+        await isClashRunning() ? Toggle.enabled : Toggle.disabled;
+  }
 
   Future<dynamic> _onMethodCall(MethodCall call) async {
     final arguments = call.arguments == null
@@ -37,8 +47,84 @@ class ClashFlt {
     return 1;
   }
 
+  Future<void> reset() async {
+    await _channel.invokeMethod("reset");
+  }
+
+  Future<void> forceGc() async {
+    await _channel.invokeMethod("forceGc");
+  }
+
+  Future<void> suspendCore({bool suspended = true}) async {
+    await _channel.invokeMethod("suspendCore", {"suspended": suspended});
+  }
+
+  Future<TunnelState> queryTunnelState() async {
+    final raw =
+        await _channel.invokeMapMethod<String, dynamic>("queryTunnelState");
+    if (raw == null) {
+      return TunnelState(mode: TunnelStateMode.direct);
+    }
+    return TunnelState.fromJson(raw);
+  }
+
+  Future<int> queryTrafficNow() async {
+    return await _channel.invokeMethod<int>("queryTrafficNow") ?? 0;
+  }
+
+  Future<int> queryTrafficTotal() async {
+    return await _channel.invokeMethod<int>("queryTrafficTotal") ?? 0;
+  }
+
+  Future<void> notifyDnsChanged({required List<String> dns}) async {
+    await _channel.invokeMethod("notifyDnsChanged", {"dns": dns});
+  }
+
+  Future<void> notifyTimeZoneChanged({
+    required String name,
+    required int offset,
+  }) async {
+    await _channel.invokeMethod("notifyTimeZoneChanged", {
+      "name": name,
+      "offset": offset,
+    });
+  }
+
+  Future<void> healthCheck({required String name}) async {
+    await _channel.invokeMethod("healthCheck", {"name": name});
+  }
+
+  Future<void> healthCheckAll() async {
+    await _channel.invokeMethod("healthCheckAll");
+  }
+
+  Future<void> installSideloadGeoip({required File file}) async {
+    await _channel.invokeMethod("installSideloadGeoip", {"path": file.path});
+  }
+
+  Future<String> subscribeLogcat({
+    required Function(LogMessage) onReceive,
+    String callbackKey = "subscribeLogcat#onReceive",
+  }) async {
+    _callbackPool[callbackKey] = onReceive;
+    await _channel.invokeMethod(
+      "subscribeLogcat",
+      {"callbackKey": callbackKey},
+    );
+    return callbackKey;
+  }
+
+  Future<void> unsubscribeLogcat({
+    String callbackKey = "subscribeLogcat#onReceive",
+  }) async {
+    await _channel.invokeMethod(
+      "unsubscribeLogcat",
+      {"callbackKey": callbackKey},
+    );
+  }
+
   Future<void> fetchAndValid({
-    required String path,
+    required Directory profilesDir,
     required String url,
     required bool force,
     required Function(FetchStatus) reportStatus,
@@ -48,7 +134,7 @@ class ClashFlt {
     await _channel.invokeMethod(
       "fetchAndValid",
       {
-        "path": path,
+        "path": profilesDir.path,
         "url": url,
         "force": force,
         "callbackKey": callbackKey,
@@ -56,8 +142,8 @@ class ClashFlt {
     );
   }
 
-  Future<void> load({required String path}) async {
-    await _channel.invokeMethod("load", {"path": path});
+  Future<void> load({required File file}) async {
+    await _channel.invokeMethod("load", {"path": file.path});
   }
 
   Future<List<Provider>> queryProviders() async {
@@ -67,14 +153,22 @@ class ClashFlt {
     return raw.map(Provider.fromJson).toList();
   }
 
+  Future<void> updateProvider({
+    required ProviderType type,
+    required String name,
+  }) async {
+    await _channel.invokeMethod("updateProvider", {
+      "type": type.name,
+      "name": name,
+    });
+  }
+
   Future<List<String>> queryGroupNames({
     bool excludeNotSelectable = false,
   }) async {
     final raw = await _channel.invokeListMethod<String>(
       "queryGroupNames",
-      {
-        "excludeNotSelectable": excludeNotSelectable,
-      },
+      {"excludeNotSelectable": excludeNotSelectable},
     );
     return raw ?? const [];
   }
@@ -102,15 +196,24 @@ class ClashFlt {
                 },
         ) ==
         true;
-    if (success) state.selectedProxy = proxy;
+    if (success) state.selectedProxy.value = proxy;
     return success;
   }
 
+  Future<bool> isClashRunning() async {
+    return await _channel.invokeMethod("isClashRunning") == true;
+  }
+
   Future<bool> startClash() async {
-    return await _channel.invokeMethod("startClash") == true;
+    state.isRunning.value = Toggle.enabling;
+    final isStarted = await _channel.invokeMethod("startClash") == true;
+    state.isRunning.value = isStarted ? Toggle.enabled : Toggle.disabled;
+    return isStarted;
   }
 
   Future<void> stopClash() async {
+    state.isRunning.value = Toggle.disabling;
     await _channel.invokeMethod("stopClash");
+    state.isRunning.value = Toggle.disabled;
   }
 }

@@ -22,7 +22,7 @@ class _NamedProxyGroupViewState extends State<NamedProxyGroupView> {
   Proxy? _selectedProxy;
 
   _load() async {
-    final proxyGroup = await _clash.queryGroup(name: "Proxy");
+    final proxyGroup = await _clash.queryGroup(name: widget.groupName);
     setState(() {
       _proxyGroup = proxyGroup;
     });
@@ -35,23 +35,23 @@ class _NamedProxyGroupViewState extends State<NamedProxyGroupView> {
     );
   }
 
-  _clashStateChange() {
+  _clashProxyChange() {
     setState(() {
-      _selectedProxy = _clash.state.selectedProxy;
+      _selectedProxy = _clash.state.selectedProxy.value;
     });
   }
 
   @override
   void initState() {
     _load();
-    _clash.state.addListener(_clashStateChange);
-    _clashStateChange();
+    _clash.state.selectedProxy.addListener(_clashProxyChange);
+    _clashProxyChange();
     super.initState();
   }
 
   @override
   void dispose() {
-    _clash.state.removeListener(_clashStateChange);
+    _clash.state.selectedProxy.removeListener(_clashProxyChange);
     super.dispose();
   }
 

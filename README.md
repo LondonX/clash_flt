@@ -1,15 +1,86 @@
 # clash_flt
 
-A new Flutter plugin project.
+A new Flutter plugin based on [ClashForAndroid](https://github.com/Kr328/ClashForAndroid) and [ClashX](https://github.com/yichengchen/clashX).
 
-## Getting Started
+# Basic usage
+### pubspec.yaml
+```yaml
+dependencies:
+  clash_flt:
+```
+### Fetch clash profile
+```dart
+final cacheDir = await getApplicationSupportDirectory();
+// will save into this file
+final profilesDir = Directory("${cacheDir.path}${Platform.pathSeparator}profiles");
+await profilesDir.create(recursive: true);
+await _clash.fetchAndValid(
+    profilesDir: profilesDir,
+    url: clashProfileUrl,
+    force: true,
+    reportStatus: (p0) {
+    setState(() {
+        _fetchStatus = p0;
+    });
+    },
+);
+setState(() {
+    _fetchStatus = null;
+});
+```
+### Load file of clash profile
+```dart
+await _clash.load(path: file.path);
+```
+### Get groupNames in profile
+```dart
+final groupNames = await _clash.queryGroupNames();
+```
+### Get proxyGroup by groupName
+```dart
+final proxyGroup = await _clash.queryGroup(name: groupName);
+```
+### Selet Proxy
+```dart
+await _clash.patchSelector(groupName, proxy);
+```
+### Start/Stop Clash VPN service
+```dart
+// start
+_clash.startClash();
+// stop
+_clash.stopClash();
+```
 
-This project is a starting point for a Flutter
-[plug-in package](https://flutter.dev/developing-packages/),
-a specialized package that includes platform-specific implementation code for
-Android and/or iOS.
-
-For help getting started with Flutter development, view the
-[online documentation](https://flutter.dev/docs), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
-
+# Supported APIs
+| API                       | Android       | iOS |
+| ------------------------- | ------------- | --- |
+| reset                     | ✅             |     |
+| forceGc                   | ✅             |     |
+| suspendCore               | ✅             |     |
+| queryTunnelState          | ✅             |     |
+| queryTrafficNow           | ✅             |     |
+| queryTrafficTotal         | ✅             |     |
+| notifyDnsChanged          | ✅             |     |
+| notifyTimeZoneChanged     | ✅             |     |
+| notifyInstalledAppChanged | ❌             |     |
+| startTun                  | ✅(startClash) |     |
+| stopTun                   | ✅(stopClash)  |     |
+| startHttp                 | ✅(startClash) |     |
+| stopHttp                  | ✅(stopClash)  |     |
+| queryGroupNames           | ✅             |     |
+| queryGroup                | ✅             |     |
+| healthCheck               | ✅             |     |
+| healthCheckAll            | ✅             |     |
+| patchSelector             | ✅             |     |
+| fetchAndValid             | ✅             |     |
+| load                      | ✅             |     |
+| queryProviders            | ✅             |     |
+| updateProvider            | ✅             |     |
+| queryOverride             | ❌             |     |
+| writeOverride             | ❌             |     |
+| clearOverride             | ❌             |     |
+| installSideloadGeoip      | ✅             |     |
+| queryConfiguration        | ❌             |     |
+| subscribeLogcat           | ✅             |     |
+| unsubscribeLogcat         | ✅             |     |

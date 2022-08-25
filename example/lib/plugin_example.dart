@@ -3,6 +3,8 @@ import 'dart:io';
 import 'package:clash_flt/clash_flt.dart';
 import 'package:clash_flt/entity/fetch_status.dart';
 import 'package:clash_flt_example/named_proxy_group_view.dart';
+import 'package:clash_flt_example/plugin_functions_view.dart';
+import 'package:clash_flt_example/sensitive_info.dart';
 import 'package:flutter/material.dart';
 import 'package:path_provider/path_provider.dart';
 
@@ -19,21 +21,22 @@ class _PluginExampleState extends State<PluginExample>
   FetchStatus? _fetchStatus;
   final _groupNames = <String>[];
 
-  TabController? _uiTab;
+  late TabController _uiTab = TabController(length: 1, vsync: this);
 
   _fetch() async {
     setState(() {
       _fetchStatus = null;
       _groupNames.clear();
-      _uiTab?.dispose();
-      _uiTab = null;
+      _uiTab.dispose();
+      _uiTab = TabController(length: 1, vsync: this);
     });
     final cacheDir = await getApplicationSupportDirectory();
-    final file = Directory("${cacheDir.path}${Platform.pathSeparator}profiles");
-    await file.create(recursive: true);
+    final profilesDir =
+        Directory("${cacheDir.path}${Platform.pathSeparator}profiles");
+    await profilesDir.create(recursive: true);
     await _clash.fetchAndValid(
-      path: file.path,
-      url: "",
+      profilesDir: profilesDir,
+      url: clashProfileUrl,
       force: true,
       reportStatus: (p0) {
         setState(() {
@@ -44,20 +47,19 @@ class _PluginExampleState extends State<PluginExample>
     setState(() {
       _fetchStatus = null;
     });
-    await _clash.load(path: file.path);
     final groupNames = await _clash.queryGroupNames();
     setState(() {
       _groupNames
         ..clear()
         ..addAll(groupNames);
-      _uiTab?.dispose();
-      _uiTab = TabController(length: groupNames.length, vsync: this);
+      _uiTab.dispose();
+      _uiTab = TabController(length: groupNames.length + 1, vsync: this);
     });
   }
 
   @override
   void dispose() {
-    _uiTab?.dispose();
+    _uiTab.dispose();
     super.dispose();
   }
 
@@ -66,23 +68,24 @@ class _PluginExampleState extends State<PluginExample>
     return Scaffold(
       appBar: AppBar(
         title: const Text("clash_flt"),
-        bottom: _uiTab == null
-            ? null
-            : TabBar(
-                tabs: _groupNames.map((e) => Tab(text: e)).toList(),
-                controller: _uiTab,
-              ),
+        bottom: TabBar(
+          tabs: [
+            "Plugin Functions",
+            ..._groupNames,
+          ].map((e) => Tab(text: e)).toList(),
+          controller: _uiTab,
+        ),
       ),
       body: Stack(
         fit: StackFit.expand,
         children: [
-          if (_uiTab != null)
-            TabBarView(
-              controller: _uiTab,
-              children: _groupNames
-                  .map((e) => NamedProxyGroupView(groupName: e))
-                  .toList(),
-            ),
+          TabBarView(
+            controller: _uiTab,
+            children: [
+              const PluginFunctionsView(),
+              ..._groupNames.map((e) => NamedProxyGroupView(groupName: e))
+            ],
+          ),
           Positioned(
             right: 16,
             bottom: 16,
