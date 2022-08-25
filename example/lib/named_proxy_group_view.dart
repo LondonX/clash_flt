@@ -23,12 +23,13 @@ class _NamedProxyGroupViewState extends State<NamedProxyGroupView> {
 
   _load() async {
     final proxyGroup = await _clash.queryGroup(name: widget.groupName);
+    if (!mounted) return;
     setState(() {
       _proxyGroup = proxyGroup;
     });
   }
 
-  _toggleConnect(Proxy proxy) async {
+  _selectProxy(Proxy proxy) async {
     await _clash.patchSelector(
       widget.groupName,
       _selectedProxy == proxy ? null : proxy,
@@ -68,8 +69,8 @@ class _NamedProxyGroupViewState extends State<NamedProxyGroupView> {
     final proxy = _proxyGroup!.proxies[index];
     return ProxyView(
       proxy: proxy,
-      isActived: _selectedProxy == proxy,
-      onTap: _toggleConnect,
+      isActived: _selectedProxy?.uniqueKey == proxy.uniqueKey,
+      onTap: _selectProxy,
     );
   }
 }

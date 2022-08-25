@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:clash_flt/clash_state.dart';
 import 'package:clash_flt/entity/proxy.dart';
+import 'package:flutter/material.dart';
 import "package:flutter/services.dart";
 
 import 'entity/fetch_status.dart';
@@ -12,7 +13,7 @@ import 'entity/tunnel_state.dart';
 
 class ClashFlt {
   static ClashFlt? _instance;
-  static ClashFlt get instance => _instance ?? ClashFlt._();
+  static ClashFlt get instance => _instance ??= ClashFlt._();
   ClashFlt._() {
     _channel.setMethodCallHandler(_onMethodCall);
     _syncState();
@@ -49,6 +50,7 @@ class ClashFlt {
 
   Future<void> reset() async {
     await _channel.invokeMethod("reset");
+    state.selectedProxy.value = null;
   }
 
   Future<void> forceGc() async {
@@ -131,15 +133,19 @@ class ClashFlt {
   }) async {
     const callbackKey = "fetchAndValid#reportStatus";
     _callbackPool[callbackKey] = reportStatus;
-    await _channel.invokeMethod(
-      "fetchAndValid",
-      {
-        "path": profilesDir.path,
-        "url": url,
-        "force": force,
-        "callbackKey": callbackKey,
-      },
-    );
+    try {
+      await _channel.invokeMethod(
+        "fetchAndValid",
+        {
+          "path": profilesDir.path,
+          "url": url,
+          "force": force,
+          "callbackKey": callbackKey,
+        },
+      );
+    } catch (e, stack) {
+      debugPrintStack(stackTrace: stack);
+    }
   }
 
   Future<void> load({required File file}) async {

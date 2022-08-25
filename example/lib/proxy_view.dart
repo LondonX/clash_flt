@@ -17,13 +17,13 @@ class ProxyView extends StatelessWidget {
     final textTheme = Theme.of(context).textTheme;
     final isTimeout = proxy.delay >= 0xFFFF;
     return Card(
-      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       child: InkWell(
         onTap: () {
           onTap!(proxy);
         },
         child: Padding(
-          padding: const EdgeInsets.all(16),
+          padding: const EdgeInsets.all(8),
           child: Row(
             children: [
               Expanded(

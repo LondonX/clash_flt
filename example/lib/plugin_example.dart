@@ -47,6 +47,7 @@ class _PluginExampleState extends State<PluginExample>
     setState(() {
       _fetchStatus = null;
     });
+    await _clash.load(file: File(profilesDir.path));
     final groupNames = await _clash.queryGroupNames();
     setState(() {
       _groupNames

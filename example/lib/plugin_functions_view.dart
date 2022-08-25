@@ -1,5 +1,6 @@
 import 'package:clash_flt/clash_flt.dart';
 import 'package:clash_flt/clash_state.dart';
+import 'package:clash_flt/entity/tunnel_state.dart';
 import 'package:flutter/material.dart';
 
 class PluginFunctionsView extends StatefulWidget {
@@ -11,12 +12,9 @@ class PluginFunctionsView extends StatefulWidget {
 
 class _PluginFunctionsViewState extends State<PluginFunctionsView> {
   final _clash = ClashFlt.instance;
-
-  @override
-  void initState() {
-    // TODO: implement initState
-    super.initState();
-  }
+  TunnelState? _tunnelState;
+  int? _trafficNow;
+  int? _trafficTotal;
 
   @override
   Widget build(BuildContext context) {
@@ -40,6 +38,57 @@ class _PluginFunctionsViewState extends State<PluginFunctionsView> {
                     },
             );
           },
+        ),
+        ListTile(
+          title: const Text("Reset"),
+          subtitle: const Text("Clash.reset"),
+          onTap: _clash.reset,
+        ),
+        ListTile(
+          title: const Text("Force GC"),
+          subtitle: const Text("Clash.forceGc"),
+          onTap: _clash.forceGc,
+        ),
+        ListTile(
+          title: const Text("Query tunnel state"),
+          subtitle: _tunnelState == null
+              ? const Text("Clash.queryTunnelState")
+              : Text(_tunnelState!.mode.name),
+          onTap: () async {
+            final result = await _clash.queryTunnelState();
+            setState(() {
+              _tunnelState = result;
+            });
+          },
+        ),
+        ListTile(
+          title: const Text("Query traffic now"),
+          subtitle: _trafficNow == null
+              ? const Text("Clash.queryTrafficNow")
+              : Text(_trafficNow.toString()),
+          onTap: () async {
+            final result = await _clash.queryTrafficNow();
+            setState(() {
+              _trafficNow = result;
+            });
+          },
+        ),
+        ListTile(
+          title: const Text("Query traffic total"),
+          subtitle: _trafficTotal == null
+              ? const Text("Clash.queryTrafficTotal")
+              : Text(_trafficTotal.toString()),
+          onTap: () async {
+            final result = await _clash.queryTrafficTotal();
+            setState(() {
+              _trafficTotal = result;
+            });
+          },
+        ),
+        ListTile(
+          title: const Text("Health check all"),
+          subtitle: const Text("Clash.healthCheckAll"),
+          onTap: _clash.healthCheckAll,
         ),
       ],
     );
