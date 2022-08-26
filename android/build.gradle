@@ -2,7 +2,7 @@ group 'com.LondonX.clash_flt'
 version '1.0-SNAPSHOT'
 
 buildscript {
-    ext.kotlin_version = '1.6.10'
+    ext.kotlin_version = '1.7.10'
     repositories {
         google()
         mavenCentral()
@@ -49,6 +49,7 @@ android {
 
     defaultConfig {
         minSdkVersion 21
+        consumerProguardFiles("consumer-rules.pro")
     }
 }
 
