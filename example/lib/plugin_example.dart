@@ -35,9 +35,8 @@ class _PluginExampleState extends State<PluginExample>
         Directory("${cacheDir.path}${Platform.pathSeparator}profiles");
     await profilesDir.create(recursive: true);
     await _clash.fetchAndValid(
-      profilesDir: profilesDir,
       url: clashProfileUrl,
-      force: true,
+      force: false,
       reportStatus: (p0) {
         setState(() {
           _fetchStatus = p0;

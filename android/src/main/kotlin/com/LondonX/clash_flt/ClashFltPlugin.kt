@@ -116,10 +116,11 @@ class ClashFltPlugin : FlutterPlugin, MethodCallHandler, ActivityAware,
                 logSubs.remove(callbackKey)
             }
             "fetchAndValid" -> {
-                val path = call.argument<String>("path")!!
                 val url = call.argument<String>("url")!!
                 val force = call.argument<Boolean>("force")!!
-                Clash.fetchAndValid(File(path), url, force) {
+                val profilesDir = File(activity!!.filesDir,"profiles")
+                profilesDir.mkdirs()
+                Clash.fetchAndValid(profilesDir, url, force) {
                     uiHandler.post {
                         callbackWithKey(callbackKey, it.toMap())
                     }

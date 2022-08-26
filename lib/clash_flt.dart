@@ -126,7 +126,6 @@ class ClashFlt {
   }
 
   Future<void> fetchAndValid({
-    required Directory profilesDir,
     required String url,
     required bool force,
     required Function(FetchStatus) reportStatus,
@@ -137,7 +136,6 @@ class ClashFlt {
       await _channel.invokeMethod(
         "fetchAndValid",
         {
-          "path": profilesDir.path,
           "url": url,
           "force": force,
           "callbackKey": callbackKey,

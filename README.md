@@ -2,12 +2,20 @@
 
 A new Flutter plugin based on [ClashForAndroid](https://github.com/Kr328/ClashForAndroid) and [ClashX](https://github.com/yichengchen/clashX).
 
-# Basic usage
+# Setup
 ### pubspec.yaml
 ```yaml
 dependencies:
   clash_flt:
 ```
+### Android
+*No additional opereates*
+### iOS
+As `gomobile` stop supporting armv7a, you need to exlude this architecture in XCode.
+* Open `Runner.xcodeproj`, select `Runner` in `PROJECT` list on the left.
+* In `Build Settings`->`All`->`Architectures`, set value to `arm64`.
+
+# Basic usage
 ### Fetch clash profile
 ```dart
 final cacheDir = await getApplicationSupportDirectory();
