@@ -153,8 +153,8 @@ class ClashFlt {
     }
   }
 
-  Future<void> load({required File file}) async {
-    await _channel.invokeMethod("load", {"path": file.path});
+  Future<void> load() async {
+    await _channel.invokeMethod("load");
   }
 
   Future<List<Provider>> queryProviders() async {

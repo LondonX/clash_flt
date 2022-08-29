@@ -129,9 +129,9 @@ class ClashFltPlugin : FlutterPlugin, MethodCallHandler, ActivityAware,
                 }.result(result, "Clash.fetchAndValid")
             }
             "load" -> {
-                val path = call.argument<String>("path")!!
-                val file = File(path)
-                Clash.load(file).result(result, "Clash.load")
+                val profilesDir = File(activity!!.filesDir, "profiles")
+                profilesDir.mkdirs()
+                Clash.load(profilesDir).result(result, "Clash.load")
             }
             "queryProviders" -> {
                 val providers = Clash.queryProviders()

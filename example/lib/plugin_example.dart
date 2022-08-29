@@ -30,10 +30,6 @@ class _PluginExampleState extends State<PluginExample>
       _uiTab.dispose();
       _uiTab = TabController(length: 1, vsync: this);
     });
-    final cacheDir = await getApplicationSupportDirectory();
-    final profilesDir =
-        Directory("${cacheDir.path}${Platform.pathSeparator}profiles");
-    await profilesDir.create(recursive: true);
     await _clash.fetchAndValid(
       url: clashProfileUrl,
       force: false,
@@ -46,7 +42,7 @@ class _PluginExampleState extends State<PluginExample>
     setState(() {
       _fetchStatus = null;
     });
-    await _clash.load(file: File(profilesDir.path));
+    await _clash.load();
     final groupNames = await _clash.queryGroupNames();
     setState(() {
       _groupNames
