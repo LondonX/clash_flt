@@ -14,7 +14,14 @@ class MyApp extends StatelessWidget {
       title: "clash_flt",
       theme: ThemeData(
         primarySwatch: Colors.blue,
+        useMaterial3: true,
       ),
+      darkTheme: ThemeData(
+        primarySwatch: Colors.blue,
+        useMaterial3: true,
+        brightness: Brightness.dark,
+      ),
+      themeMode: ThemeMode.system,
       home: const PluginExample(),
     );
   }

@@ -61,34 +61,34 @@ _clash.stopClash();
 ```
 
 # Supported APIs
-| API                       | Android       | iOS |
-| ------------------------- | ------------- | --- |
-| reset                     | ✅             |     |
-| forceGc                   | ✅             |     |
-| suspendCore               | ✅             |     |
-| queryTunnelState          | ✅             |     |
-| queryTrafficNow           | ✅             |     |
-| queryTrafficTotal         | ✅             |     |
-| notifyDnsChanged          | ✅             |     |
-| notifyTimeZoneChanged     | ✅             |     |
-| notifyInstalledAppChanged | ❌             |     |
-| startTun                  | ✅(startClash) |     |
-| stopTun                   | ✅(stopClash)  |     |
-| startHttp                 | ✅(startClash) |     |
-| stopHttp                  | ✅(stopClash)  |     |
-| queryGroupNames           | ✅             |     |
-| queryGroup                | ✅             |     |
-| healthCheck               | ✅             |     |
-| healthCheckAll            | ✅             |     |
-| patchSelector             | ✅             |     |
-| fetchAndValid             | ✅             |     |
-| load                      | ✅             |     |
-| queryProviders            | ✅             |     |
-| updateProvider            | ✅             |     |
-| queryOverride             | ❌             |     |
-| writeOverride             | ❌             |     |
-| clearOverride             | ❌             |     |
-| installSideloadGeoip      | ✅             |     |
-| queryConfiguration        | ❌             |     |
-| subscribeLogcat           | ✅             |     |
-| unsubscribeLogcat         | ✅             |     |
+| API                       | Android | iOS |
+| ------------------------- | ------- | --- |
+| reset                     | ✅       | ❌   |
+| forceGc                   | ✅       | ❌   |
+| suspendCore               | ✅       | ❌   |
+| queryTunnelState          | ✅       | ✅   |
+| queryTrafficNow           | ❌       | ✅   |
+| queryTrafficTotal         | ❌       | ✅   |
+| notifyDnsChanged          | ✅       | ❌   |
+| notifyTimeZoneChanged     | ✅       | ❌   |
+| notifyInstalledAppChanged | ❌       | ❌   |
+| startTun(startClash)      | ✅       |     |
+| stopTun(stopClash)        | ✅       |     |
+| startHttp(startClash)     | ✅       |     |
+| stopHttp(stopClash)       | ✅       |     |
+| queryGroupNames           | ✅       |     |
+| queryGroup                | ✅       |     |
+| healthCheck               | ✅       | ✅   |
+| healthCheckAll            | ✅       | ❌   |
+| patchSelector             | ✅       |     |
+| fetchAndValid             | ✅       |     |
+| load                      | ✅       |     |
+| queryProviders            | ✅       |     |
+| updateProvider            | ✅       |     |
+| queryOverride             | ❌       |     |
+| writeOverride             | ❌       |     |
+| clearOverride             | ❌       |     |
+| installSideloadGeoip      | ✅       |     |
+| queryConfiguration        | ❌       |     |
+| subscribeLogcat           | ✅       |     |
+| unsubscribeLogcat         | ✅       |     |

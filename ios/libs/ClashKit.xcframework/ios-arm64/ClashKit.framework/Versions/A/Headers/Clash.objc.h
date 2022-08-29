@@ -21,6 +21,8 @@
 
 FOUNDATION_EXPORT void ClashCloseAllConnections(void);
 
+FOUNDATION_EXPORT NSString* _Nonnull ClashGetTunnelMode(void);
+
 FOUNDATION_EXPORT void ClashHealthCheck(NSString* _Nullable name, NSString* _Nullable url, long timeout);
 
 FOUNDATION_EXPORT NSData* _Nullable ClashProvidersData(void);

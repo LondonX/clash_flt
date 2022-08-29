@@ -63,12 +63,14 @@ class ClashFltPlugin : FlutterPlugin, MethodCallHandler, ActivityAware,
                 result.success(tunState.toMap())
             }
             "queryTrafficNow" -> {
-                val traffic: Long = Clash.queryTrafficNow()
-                result.success(traffic)
+//                val traffic: Long = Clash.queryTrafficNow()
+//                result.success(traffic)
+                result.notImplemented()
             }
             "queryTrafficTotal" -> {
-                val traffic: Long = Clash.queryTrafficTotal()
-                result.success(traffic)
+//                val traffic: Long = Clash.queryTrafficTotal()
+//                result.success(traffic)
+                result.notImplemented()
             }
             "notifyDnsChanged" -> {
                 val path = call.argument<List<String>>("dns")!!
@@ -118,7 +120,7 @@ class ClashFltPlugin : FlutterPlugin, MethodCallHandler, ActivityAware,
             "fetchAndValid" -> {
                 val url = call.argument<String>("url")!!
                 val force = call.argument<Boolean>("force")!!
-                val profilesDir = File(activity!!.filesDir,"profiles")
+                val profilesDir = File(activity!!.filesDir, "profiles")
                 profilesDir.mkdirs()
                 Clash.fetchAndValid(profilesDir, url, force) {
                     uiHandler.post {

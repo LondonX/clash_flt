@@ -9,11 +9,17 @@ import Foundation
 import ClashKit
 
 class AppClashClient: NSObject, ClashClientProtocol {
+    private let trafficListener: (_ up: Int64, _ down: Int64) -> Void
+    
+    init(trafficListener: @escaping (_ up: Int64, _ down: Int64) -> Void) {
+        self.trafficListener = trafficListener
+    }
+    
     func log(_ level: String?, message: String?) {
         print("AppClashClient[\(level ?? "")]: \(message ?? "")")
     }
     
     func traffic(_ up: Int64, down: Int64) {
-//        print("AppClashClient[traffic]: ⬆️\(up)|⬇️\(down)")
+        trafficListener(up, down)
     }
 }

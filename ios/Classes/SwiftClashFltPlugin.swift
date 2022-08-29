@@ -4,7 +4,9 @@ import ClashKit
 
 public class SwiftClashFltPlugin: NSObject, FlutterPlugin {
     private let channel: FlutterMethodChannel
-    private let clashClient = AppClashClient()
+    private var trafficTotal = Traffic(up: 0, down: 0)
+    private var trafficNow = Traffic(up: 0, down: 0)
+    private lazy var clashClient = AppClashClient(trafficListener: self.trafficListener)
     
     init(channel: FlutterMethodChannel) {
         self.channel = channel
@@ -26,36 +28,34 @@ public class SwiftClashFltPlugin: NSObject, FlutterPlugin {
         let callMethod = call.method
         switch(callMethod){
         case "reset":
+            result(nil)
             break
         case "forceGc":
-            break
-        case "suspendCore":
+            result(nil)
             break
         case "queryTunnelState":
+            let mode = ClashKit.ClashGetTunnelMode()
+            result(["mode" : mode])
             break
         case "queryTrafficNow":
+            result(trafficNow.toMap())
             break
         case "queryTrafficTotal":
+            result(trafficTotal.toMap())
             break
         case "notifyDnsChanged":
+            result(FlutterMethodNotImplemented)
             break
         case "notifyTimeZoneChanged":
-            break
-        case "startTun":
-            break
-        case "stopTun":
-            break
-        case "startHttp":
-            break
-        case "stopHttp":
-            break
-        case "queryGroupNames":
-            break
-        case "queryGroup":
+            result(FlutterMethodNotImplemented)
             break
         case "healthCheck":
+            let name = argsMap?["name"] as! String
+            ClashHealthCheck(name, "https://www.google.com", 5000)
+            result(nil)
             break
         case "healthCheckAll":
+            result(FlutterMethodNotImplemented)
             break
         case "patchSelector":
             break
@@ -81,7 +81,6 @@ public class SwiftClashFltPlugin: NSObject, FlutterPlugin {
                 dir.deleteLastPathComponent()
                 do {
                     let config = try String(contentsOf: profileFile!)
-                    clashClient.log("info", message: "LondonX")
                     ClashKit.ClashSetup(dir.path, config, clashClient)
                 } catch {
                     result(FlutterError(code: "Clash.\(callMethod)", message: "Profile invalid!!!", details: nil))
@@ -115,6 +114,14 @@ public class SwiftClashFltPlugin: NSObject, FlutterPlugin {
         channel.invokeMethod(
             "callbackWithKey",
             arguments: arguments
+        )
+    }
+    
+    private func trafficListener(up: Int64, down: Int64) {
+        self.trafficNow = Traffic(up: up, down: down)
+        self.trafficTotal = Traffic(
+            up: self.trafficTotal.up + up,
+            down: self.trafficTotal.down + down
         )
     }
 }

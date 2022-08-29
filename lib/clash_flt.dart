@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:clash_flt/clash_state.dart';
 import 'package:clash_flt/entity/proxy.dart';
+import 'package:clash_flt/entity/traffic.dart';
 import 'package:flutter/material.dart';
 import "package:flutter/services.dart";
 
@@ -70,12 +71,18 @@ class ClashFlt {
     return TunnelState.fromJson(raw);
   }
 
-  Future<int> queryTrafficNow() async {
-    return await _channel.invokeMethod<int>("queryTrafficNow") ?? 0;
+  Future<Traffic> queryTrafficNow() async {
+    final raw =
+        await _channel.invokeMapMethod<String, dynamic>("queryTrafficNow");
+    if (raw == null) return Traffic.zero;
+    return Traffic.fromJson(raw);
   }
 
-  Future<int> queryTrafficTotal() async {
-    return await _channel.invokeMethod<int>("queryTrafficTotal") ?? 0;
+  Future<Traffic> queryTrafficTotal() async {
+    final raw =
+        await _channel.invokeMapMethod<String, dynamic>("queryTrafficTotal");
+    if (raw == null) return Traffic.zero;
+    return Traffic.fromJson(raw);
   }
 
   Future<void> notifyDnsChanged({required List<String> dns}) async {

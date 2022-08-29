@@ -1,5 +1,6 @@
 import 'package:clash_flt/clash_flt.dart';
 import 'package:clash_flt/clash_state.dart';
+import 'package:clash_flt/entity/traffic.dart';
 import 'package:clash_flt/entity/tunnel_state.dart';
 import 'package:flutter/material.dart';
 
@@ -13,8 +14,8 @@ class PluginFunctionsView extends StatefulWidget {
 class _PluginFunctionsViewState extends State<PluginFunctionsView> {
   final _clash = ClashFlt.instance;
   TunnelState? _tunnelState;
-  int? _trafficNow;
-  int? _trafficTotal;
+  Traffic _trafficNow = Traffic.zero;
+  Traffic _trafficTotal = Traffic.zero;
 
   @override
   Widget build(BuildContext context) {
@@ -63,7 +64,7 @@ class _PluginFunctionsViewState extends State<PluginFunctionsView> {
         ),
         ListTile(
           title: const Text("Query traffic now"),
-          subtitle: _trafficNow == null
+          subtitle: _trafficNow == Traffic.zero
               ? const Text("Clash.queryTrafficNow")
               : Text(_trafficNow.toString()),
           onTap: () async {
@@ -75,7 +76,7 @@ class _PluginFunctionsViewState extends State<PluginFunctionsView> {
         ),
         ListTile(
           title: const Text("Query traffic total"),
-          subtitle: _trafficTotal == null
+          subtitle: _trafficTotal == Traffic.zero
               ? const Text("Clash.queryTrafficTotal")
               : Text(_trafficTotal.toString()),
           onTap: () async {
