@@ -67,8 +67,8 @@ _clash.stopClash();
 | forceGc                   | ✅       | ❌   |
 | suspendCore               | ✅       | ❌   |
 | queryTunnelState          | ✅       | ✅   |
-| queryTrafficNow           | ❌       | ✅   |
-| queryTrafficTotal         | ❌       | ✅   |
+| queryTrafficNow           | ✅       | ✅   |
+| queryTrafficTotal         | ✅       | ✅   |
 | notifyDnsChanged          | ✅       | ❌   |
 | notifyTimeZoneChanged     | ✅       | ❌   |
 | notifyInstalledAppChanged | ❌       | ❌   |

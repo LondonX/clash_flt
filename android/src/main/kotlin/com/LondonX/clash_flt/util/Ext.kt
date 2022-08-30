@@ -2,6 +2,8 @@ package com.LondonX.clash_flt.util
 
 import com.github.kr328.clash.core.Clash
 import com.github.kr328.clash.core.model.*
+import com.github.kr328.clash.core.util.trafficDownload
+import com.github.kr328.clash.core.util.trafficUpload
 
 
 fun FetchStatus.toMap(): Map<String, Any> {
@@ -102,6 +104,13 @@ fun LogMessage.toMap(): Map<String, Any> {
         "level" to level.toDartEnum(),
         "message" to message,
         "time" to time.time,
+    )
+}
+
+fun Traffic.toMap(): Map<String, Any> {
+    return mapOf(
+        "up" to this.trafficUpload(),
+        "down" to this.trafficDownload(),
     )
 }
 

@@ -63,14 +63,12 @@ class ClashFltPlugin : FlutterPlugin, MethodCallHandler, ActivityAware,
                 result.success(tunState.toMap())
             }
             "queryTrafficNow" -> {
-//                val traffic: Long = Clash.queryTrafficNow()
-//                result.success(traffic)
-                result.notImplemented()
+                val traffic = Clash.queryTrafficNow()
+                result.success(traffic.toMap())
             }
             "queryTrafficTotal" -> {
-//                val traffic: Long = Clash.queryTrafficTotal()
-//                result.success(traffic)
-                result.notImplemented()
+                val traffic = Clash.queryTrafficTotal()
+                result.success(traffic.toMap())
             }
             "notifyDnsChanged" -> {
                 val path = call.argument<List<String>>("dns")!!
