@@ -9,11 +9,18 @@ dependencies:
   clash_flt:
 ```
 ### Android
-*No additional opereates*
+1. Requires minSdkVersion 21
 ### iOS
-As `gomobile` stop supporting armv7a, you need to exlude this architecture in XCode.
+1. Requires iOS 13 or newer.
+2. As `gomobile` stop supporting armv7a, you need to exlude this architecture in XCode.
 * Open `Runner.xcodeproj`, select `Runner` in `PROJECT` list on the left.
 * In `Build Settings`->`All`->`Architectures`, set value to `arm64`.
+
+3. Add `ClashKit.xcframework`
+* Open `Pods` in Project Navigator.
+* Select `clash_flt` in `TARGETS`
+* Select `General` tab.
+* Add `ClashKit.xcframework` into `Frameworks and Libraries`.
 
 # Basic usage
 ### Fetch clash profile
