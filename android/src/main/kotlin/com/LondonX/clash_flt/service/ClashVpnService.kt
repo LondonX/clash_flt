@@ -70,7 +70,7 @@ class ClashVpnService : VpnService() {
         if (isRunning) return
         val vpnFd = setupVpn()
         Clash.startTun(
-            fd = vpnFd.fd,
+            fd = vpnFd.detachFd(),
             gateway = "$TUN_GATEWAY/$TUN_SUBNET_PREFIX",
             portal = TUN_PORTAL,
             dns = NET_ANY,// dnsHijacking TUN_DNS
