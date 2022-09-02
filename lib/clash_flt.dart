@@ -24,6 +24,9 @@ class ClashFlt {
   final Map<String, Function> _callbackPool = {};
   final state = ClashState();
 
+  var _checkingHealth = false;
+  get checkingHealth => _checkingHealth;
+
   _syncState() async {
     state.isRunning.value =
         await isClashRunning() ? Toggle.enabled : Toggle.disabled;
@@ -100,11 +103,15 @@ class ClashFlt {
   }
 
   Future<void> healthCheck({required String name}) async {
+    _checkingHealth = true;
     await _channel.invokeMethod("healthCheck", {"name": name});
+    _checkingHealth = false;
   }
 
   Future<void> healthCheckAll() async {
+    _checkingHealth = true;
     await _channel.invokeMethod("healthCheckAll");
+    _checkingHealth = false;
   }
 
   Future<void> installSideloadGeoip({required File file}) async {

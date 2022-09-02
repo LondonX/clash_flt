@@ -15,14 +15,21 @@ import CommonCrypto
 func downloadProfile(url: String?, force: Bool) async -> URL? {
     if(url == nil) {
         return nil
-        
     }
-    let key = SHA256(string: url!)
+    let urlObj = URL(string: url!)!
+    let noExt = urlObj.pathExtension.isEmpty
+    let key = urlObj.lastPathComponent + (noExt ? ".yaml" : "")
     var profileFile = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask).first
     if(profileFile == nil) {
         return nil
     }
-    profileFile!.appendPathComponent("profiles/\(key).yaml")
+    profileFile!.appendPathComponent("profiles")
+    do {
+        try FileManager.default.createDirectory(atPath: profileFile!.path, withIntermediateDirectories: true)
+    }catch{
+        return nil
+    }
+    profileFile!.appendPathComponent(key)
     let path = profileFile!.path
     if (!force && FileManager.default.fileExists(atPath: path)) {
         return profileFile
@@ -38,7 +45,16 @@ func downloadProfile(url: String?, force: Bool) async -> URL? {
             }
             do {
                 let data = try Data(contentsOf: tempFileUrl!)
-                try data.write(to: profileFile!)
+                if(FileManager.default.fileExists(atPath: profileFile!.path)) {
+                    try data.write(to: profileFile!)
+                } else {
+                    let created = FileManager.default.createFile(atPath: profileFile!.path, contents: data)
+                    if(!created) {
+                        continuation.resume(returning: nil)
+                        return
+                    }
+                }
+                try FileManager.default.removeItem(at: tempFileUrl!)
                 continuation.resume(returning: profileFile)
             } catch {
                 continuation.resume(returning: nil)

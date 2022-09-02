@@ -7,7 +7,7 @@
 
 import Foundation
 
-class Traffic {
+class Traffic : NSObject{
     let up: Int64
     let down: Int64
     

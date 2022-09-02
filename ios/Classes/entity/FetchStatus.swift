@@ -7,7 +7,7 @@
 
 import Foundation
 
-class FetchStatus{
+class FetchStatus : NSObject{
     let action: Action
     let args: [String]
     let progress: Int

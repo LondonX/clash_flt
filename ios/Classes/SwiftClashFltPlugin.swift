@@ -50,12 +50,21 @@ public class SwiftClashFltPlugin: NSObject, FlutterPlugin {
             result(FlutterMethodNotImplemented)
             break
         case "healthCheck":
-            let name = argsMap?["name"] as! String
-            ClashHealthCheck(name, "https://www.google.com", 5000)
             result(nil)
+//            let name = argsMap?["name"] as! String
+//            Task.init {
+//                clashClient.healthCheck(groupName: name)
+//                result(nil)
+//            }
             break
         case "healthCheckAll":
-            result(FlutterMethodNotImplemented)
+//            Task.init {
+//                for name in clashClient.proxyGroups.keys {
+//                    clashClient.healthCheck(groupName: name)
+//                }
+//                result(nil)
+//            }
+            result(nil)
             break
         case "patchSelector":
             break
@@ -67,6 +76,11 @@ public class SwiftClashFltPlugin: NSObject, FlutterPlugin {
                     callbackKey: callbackKey,
                     params: FetchStatus(action: .fetchConfiguration).toMap()
                 )
+                let countryDB = await downloadProfile(url: "https://github.com/Dreamacro/maxmind-geoip/releases/latest/download/Country.mmdb", force: false)
+                if(countryDB == nil) {
+                    result(FlutterError(code: "Clash.\(callMethod)", message: "Download countryDB failed!!!", details: nil))
+                    return
+                }
                 let profileFile = await downloadProfile(url: url, force: force)
                 print("downloadProfile result: ", profileFile ?? "")
                 callbackWithKey(
@@ -83,6 +97,7 @@ public class SwiftClashFltPlugin: NSObject, FlutterPlugin {
                     let config = try String(contentsOf: profileFile!)
                     ClashKit.ClashSetup(dir.path, config, clashClient)
                 } catch {
+                    print(error)
                     result(FlutterError(code: "Clash.\(callMethod)", message: "Profile invalid!!!", details: nil))
                     return
                 }
@@ -90,11 +105,46 @@ public class SwiftClashFltPlugin: NSObject, FlutterPlugin {
             }
             break
         case "load":
+            Task.init {
+                let loaded = clashClient.load()
+                result(loaded)
+            }
             break
         case "queryProviders":
             break
         case "updateProvider":
             break
+        case "queryGroupNames":
+            var groupNames = Array<String>(clashClient.proxyGroups.keys)
+            groupNames.sort()
+            result(groupNames)
+            break
+        case "queryGroup":
+            let groupName = argsMap?["name"] as? String
+            let proxySort = argsMap?["proxySort"] as? String
+            let sortByDelay = proxySort == "delay"
+            if (groupName == nil) {
+                result(nil)
+                break
+            }
+            let group = clashClient.proxyGroups[groupName!]
+            if (group == nil) {
+                result(nil)
+                break
+            }
+            if (sortByDelay) {
+                let sortedGroup = ProxyGroup(
+                    type: group!.type,
+                    proxies: Array<Proxy>(group!.proxies).sorted(by: { p0, p1 in
+                        return p0.delay < p1.delay
+                    }),
+                    now: group!.now
+                )
+                result(sortedGroup.toMap())
+            }else{
+                result(group!.toMap())
+            }
+            break;
         case "installSideloadGeoip":
             break
         case "subscribeLogcat":

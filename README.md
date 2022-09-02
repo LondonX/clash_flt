@@ -83,8 +83,8 @@ _clash.stopClash();
 | stopTun(stopClash)        | ✅       |     |
 | startHttp(startClash)     | ✅       |     |
 | stopHttp(stopClash)       | ✅       |     |
-| queryGroupNames           | ✅       |     |
-| queryGroup                | ✅       |     |
+| queryGroupNames           | ✅       | ✅   |
+| queryGroup                | ✅       | ✅   |
 | healthCheck               | ✅       | ✅   |
 | healthCheckAll            | ✅       | ❌   |
 | patchSelector             | ✅       |     |
