@@ -25,13 +25,11 @@ FOUNDATION_EXPORT NSString* _Nonnull ClashGetTunnelMode(void);
 
 FOUNDATION_EXPORT NSData* _Nullable ClashHealthCheck(NSString* _Nullable name, NSString* _Nullable url);
 
-FOUNDATION_EXPORT void ClashPatchSelectGroup(NSData* _Nullable data);
+FOUNDATION_EXPORT BOOL ClashPatchSelector(NSData* _Nullable data);
 
 FOUNDATION_EXPORT NSData* _Nullable ClashProvidersData(void);
 
 FOUNDATION_EXPORT NSData* _Nullable ClashProxiesData(void);
-
-FOUNDATION_EXPORT NSData* _Nullable ClashQueryGroupNames(void);
 
 FOUNDATION_EXPORT BOOL ClashSetConfig(NSString* _Nullable uuid, NSError* _Nullable* _Nullable error);
 

@@ -67,6 +67,12 @@ public class SwiftClashFltPlugin: NSObject, FlutterPlugin {
             result(nil)
             break
         case "patchSelector":
+            let groupName = argsMap!["groupName"] as! String
+            let name = argsMap!["name"] as! String
+            let map = [groupName : name]
+            let json = JsonUtil.convertFromDictionary(dic: map)
+            let patched = ClashPatchSelector(json?.data(using: .utf8))
+            result(patched)
             break
         case "fetchAndValid":
             let url = argsMap?["url"] as? String
