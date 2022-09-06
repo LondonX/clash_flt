@@ -7,6 +7,7 @@ public class SwiftClashFltPlugin: NSObject, FlutterPlugin {
     private var trafficTotal = Traffic(up: 0, down: 0)
     private var trafficNow = Traffic(up: 0, down: 0)
     private lazy var clashClient = AppClashClient(trafficListener: self.trafficListener)
+    private let vpnManager = VPNManager.shared
     
     init(channel: FlutterMethodChannel) {
         self.channel = channel
@@ -113,8 +114,33 @@ public class SwiftClashFltPlugin: NSObject, FlutterPlugin {
         case "load":
             Task.init {
                 let loaded = clashClient.load()
+                await vpnManager.loadController()
                 result(loaded)
             }
+            break
+        case "isClashRunning":
+            let connected = vpnManager.controller?.connectionStatus == .connected
+            result(connected)
+            break
+        case "startClash":
+            Task.init {
+                do {
+                    try await vpnManager.installVPNConfiguration()
+                    if(vpnManager.controller == nil) {
+                        result(false)
+                        return
+                    }
+                    try await vpnManager.controller?.startVPN()
+                } catch {
+                    result(false)
+                    return
+                }
+                result(true)
+            }
+            break
+        case "stopClash":
+            vpnManager.controller?.stopVPN()
+            result(nil)
             break
         case "queryProviders":
             break

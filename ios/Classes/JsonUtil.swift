@@ -21,7 +21,21 @@ public class JsonUtil {
         }
         return nil
     }
-
+    
+    public static func convertFromDictionary(dic: Dictionary<String, Any>?) -> String? {
+        var jsonData: Data? = nil
+        do {
+            if let dic = dic {
+                jsonData = try JSONSerialization.data(withJSONObject: dic, options: .prettyPrinted)
+            }
+        } catch {
+        }
+        if let jsonData = jsonData {
+            return String(data: jsonData, encoding: .utf8)
+        }
+        return nil
+    }
+    
     public static func getArrayFromJSONString(text: String?) -> NSArray? {
         if (text == nil) {
             return nil

@@ -22,6 +22,12 @@ dependencies:
 * Select `General` tab.
 * Add `ClashKit.xcframework` into `Frameworks and Libraries`.
 
+4. Modify `Runner.xcodeproj`
+* Open `Signing & Capabilities` tab.
+* You may need to enable `Network Extension` in [Apple Developer Account page](https://developer.apple.com/account/)/Certificates, IDs & Profiles/Identifiers/YOUR_BUNDLE_ID/Edit/Network Extensions checkbox, before add `Network Extension` and provision.
+* Add `Network Extension` an `Personal VPN`.
+* Check `App Proxy` and `Packet Tunnel` of `Network Extension`。
+
 # Basic usage
 ### Fetch clash profile
 ```dart
@@ -85,11 +91,11 @@ _clash.stopClash();
 | stopHttp(stopClash)       | ✅       |     |
 | queryGroupNames           | ✅       | ✅   |
 | queryGroup                | ✅       | ✅   |
-| healthCheck               | ✅       | ✅   |
+| healthCheck               | ✅       | ❌   |
 | healthCheckAll            | ✅       | ❌   |
-| patchSelector             | ✅       |     |
-| fetchAndValid             | ✅       |     |
-| load                      | ✅       |     |
+| patchSelector             | ✅       | ✅   |
+| fetchAndValid             | ✅       | ✅   |
+| load                      | ✅       | ✅   |
 | queryProviders            | ✅       |     |
 | updateProvider            | ✅       |     |
 | queryOverride             | ❌       |     |
