@@ -30,11 +30,13 @@ public final class VPNManager: ObservableObject {
     }
     
     func loadController() async {
-        let port = ClashKit.ClashGetConfigPort()
-        if (port == 0) {
+        let generalData = ClashKit.ClashGetConfigGeneral()
+        let general = JsonUtil.convertToDictionary(text: String(data: generalData!, encoding: .utf8))
+        let port = general?["port"] as? Int
+        if (port == nil) {
             return
         }
-        configPort = port
+        configPort = port!
         if let manager = try? await self.loadCurrentTunnelProviderManager() {
             if let controller = self.controller, controller.isEqually(manager: manager) {
                 // Nothing
@@ -72,20 +74,17 @@ public final class VPNManager: ObservableObject {
     
     public func installVPNConfiguration() async throws {
         let manager = (try? await loadCurrentTunnelProviderManager()) ?? NETunnelProviderManager()
-        manager.protocolConfiguration = {
-            let configuration = NETunnelProviderProtocol()
-            configuration.providerBundleIdentifier = self.providerBundleIdentifier
-            configuration.serverAddress = "Clash"
-            configuration.disconnectOnSleep = true
-            if #available(iOS 14.2, *) {
-                configuration.excludeLocalNetworks = true
-            }
-            return configuration
-        }()
+        let config = NETunnelProviderProtocol()
+        config.providerBundleIdentifier = self.providerBundleIdentifier
+        config.serverAddress = "Clash"
+        config.disconnectOnSleep = true
+        if #available(iOS 14.2, *) {
+            config.excludeLocalNetworks = true
+        }
+        manager.protocolConfiguration = config
         manager.isEnabled = true
         manager.isOnDemandEnabled = true
         try await manager.saveToPreferences()
-        try await controller?.execute(command: .setConfig)
     }
 }
 
@@ -135,7 +134,12 @@ public final class VPNController: ObservableObject {
             try await self.providerManager.saveToPreferences()
         }
         do {
-            try self.providerManager.connection.startVPNTunnel(options: ["port": 7890 as NSObject])
+            let generalData = ClashKit.ClashGetConfigGeneral()
+            let general = JsonUtil.convertToDictionary(text: String(data: generalData!, encoding: .utf8))
+            let port = general?["port"] as? Int ?? 7890
+            try self.providerManager.connection.startVPNTunnel(options: [
+                "port" : port as NSObject,
+            ])
         } catch {
             print("error: \(error)")
         }
