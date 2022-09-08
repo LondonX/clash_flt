@@ -6,7 +6,6 @@ public final class VPNManager: ObservableObject {
     
     private var cancellables: Set<AnyCancellable> = []
     public var controller: VPNController?
-    private var configPort = 0
     
     public static let shared = VPNManager()
     
@@ -30,13 +29,6 @@ public final class VPNManager: ObservableObject {
     }
     
     func loadController() async {
-        let generalData = ClashKit.ClashGetConfigGeneral()
-        let general = JsonUtil.convertToDictionary(text: String(data: generalData!, encoding: .utf8))
-        let port = general?["port"] as? Int
-        if (port == nil) {
-            return
-        }
-        configPort = port!
         if let manager = try? await self.loadCurrentTunnelProviderManager() {
             if let controller = self.controller, controller.isEqually(manager: manager) {
                 // Nothing
