@@ -1,4 +1,3 @@
-import 'package:clash_flt/clash_channel.dart';
 import 'package:clash_flt/clash_flt.dart';
 import 'package:clash_flt/entity/proxy.dart';
 import 'package:clash_flt/entity/proxy_group.dart';
@@ -6,11 +5,11 @@ import 'package:clash_flt_example/proxy_view.dart';
 import 'package:flutter/material.dart';
 
 class NamedProxyGroupView extends StatefulWidget {
-  final String groupName;
+  final ProxyGroup group;
 
   const NamedProxyGroupView({
     Key? key,
-    required this.groupName,
+    required this.group,
   }) : super(key: key);
 
   @override
@@ -18,60 +17,56 @@ class NamedProxyGroupView extends StatefulWidget {
 }
 
 class _NamedProxyGroupViewState extends State<NamedProxyGroupView> {
-  final _clash = ClashChannel.instance;
-  ProxyGroup? _proxyGroup;
   Proxy? _selectedProxy;
+  final _proxies = <Proxy>[];
 
-  _load() async {
-    final proxyGroup = await _clash.queryGroup(name: widget.groupName);
-    if (!mounted) return;
-    setState(() {
-      _proxyGroup = proxyGroup;
-    });
+  _selectProxy(Proxy proxy) {
+    //TODO
   }
 
-  _selectProxy(Proxy proxy) async {
-    await _clash.patchSelector(
-      widget.groupName,
-      _selectedProxy == proxy ? null : proxy,
-    );
+  _healthCheck(Proxy proxy) async {
+    await ClashFlt.instance.healthCheck(proxy);
+    setState(() {});
   }
 
-  _clashProxyChange() {
+  _mapProxies() {
+    final proxies =
+        widget.group.proxies.map((e) => ClashFlt.instance.findProxy(e));
     setState(() {
-      _selectedProxy = _clash.state.selectedProxy.value;
+      _proxies
+        ..clear()
+        ..addAll(proxies);
     });
   }
 
   @override
   void initState() {
-    _load();
-    _clash.state.selectedProxy.addListener(_clashProxyChange);
-    _clashProxyChange();
+    _mapProxies();
     super.initState();
   }
 
   @override
-  void dispose() {
-    _clash.state.selectedProxy.removeListener(_clashProxyChange);
-    super.dispose();
+  void didUpdateWidget(covariant NamedProxyGroupView oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    _mapProxies();
   }
 
   @override
   Widget build(BuildContext context) {
     return ListView.builder(
       padding: const EdgeInsets.symmetric(vertical: 8),
-      itemCount: _proxyGroup?.proxies.length ?? 0,
+      itemCount: _proxies.length,
       itemBuilder: _buildItem,
     );
   }
 
   Widget _buildItem(BuildContext context, int index) {
-    final proxy = ClashFlt.instance.findProxy(_proxyGroup!.proxies[index]);
+    final proxy = _proxies[index];
     return ProxyView(
       proxy: proxy,
       isActived: _selectedProxy?.uniqueKey == proxy.uniqueKey,
       onTap: _selectProxy,
+      healthCheck: _healthCheck,
     );
   }
 }

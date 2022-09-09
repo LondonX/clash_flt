@@ -1,16 +1,9 @@
-import 'dart:io';
-
 import 'package:clash_flt/clash_state.dart';
 import 'package:clash_flt/entity/proxy.dart';
 import 'package:clash_flt/entity/traffic.dart';
-import 'package:flutter/material.dart';
 import "package:flutter/services.dart";
 
-import 'entity/fetch_status.dart';
 import 'entity/log_mesage.dart';
-import 'entity/provider.dart';
-import 'entity/proxy_group.dart';
-import 'entity/tunnel_state.dart';
 
 class ClashChannel {
   static ClashChannel? _instance;
@@ -44,34 +37,10 @@ class ClashChannel {
         rawParams is Map ? Map<String, dynamic>.from(rawParams) : null;
     switch (call.method) {
       case "callbackWithKey":
-        final fetchStatus =
-            jsonParams == null ? null : FetchStatus.fromJson(jsonParams);
-        callback.call(fetchStatus);
+        callback.call(jsonParams);
         break;
     }
     return 1;
-  }
-
-  Future<void> reset() async {
-    await _channel.invokeMethod("reset");
-    state.selectedProxy.value = null;
-  }
-
-  Future<void> forceGc() async {
-    await _channel.invokeMethod("forceGc");
-  }
-
-  Future<void> suspendCore({bool suspended = true}) async {
-    await _channel.invokeMethod("suspendCore", {"suspended": suspended});
-  }
-
-  Future<TunnelState> queryTunnelState() async {
-    final raw =
-        await _channel.invokeMapMethod<String, dynamic>("queryTunnelState");
-    if (raw == null) {
-      return TunnelState(mode: TunnelStateMode.direct);
-    }
-    return TunnelState.fromJson(raw);
   }
 
   Future<Traffic> queryTrafficNow() async {
@@ -88,20 +57,6 @@ class ClashChannel {
     return Traffic.fromJson(raw);
   }
 
-  Future<void> notifyDnsChanged({required List<String> dns}) async {
-    await _channel.invokeMethod("notifyDnsChanged", {"dns": dns});
-  }
-
-  Future<void> notifyTimeZoneChanged({
-    required String name,
-    required int offset,
-  }) async {
-    await _channel.invokeMethod("notifyTimeZoneChanged", {
-      "name": name,
-      "offset": offset,
-    });
-  }
-
   Future<void> healthCheck({required String name}) async {
     _checkingHealth = true;
     await _channel.invokeMethod("healthCheck", {"name": name});
@@ -112,10 +67,6 @@ class ClashChannel {
     _checkingHealth = true;
     await _channel.invokeMethod("healthCheckAll");
     _checkingHealth = false;
-  }
-
-  Future<void> installSideloadGeoip({required File file}) async {
-    await _channel.invokeMethod("installSideloadGeoip", {"path": file.path});
   }
 
   Future<String> subscribeLogcat({
@@ -137,70 +88,6 @@ class ClashChannel {
       "unsubscribeLogcat",
       {"callbackKey": callbackKey},
     );
-  }
-
-  Future<void> fetchAndValid({
-    required String url,
-    required bool force,
-    required Function(FetchStatus) reportStatus,
-  }) async {
-    const callbackKey = "fetchAndValid#reportStatus";
-    _callbackPool[callbackKey] = reportStatus;
-    try {
-      await _channel.invokeMethod(
-        "fetchAndValid",
-        {
-          "url": url,
-          "force": force,
-          "callbackKey": callbackKey,
-        },
-      );
-    } catch (e, stack) {
-      debugPrintStack(stackTrace: stack);
-    }
-  }
-
-  Future<void> load() async {
-    await _channel.invokeMethod("load");
-  }
-
-  Future<List<Provider>> queryProviders() async {
-    final raw =
-        await _channel.invokeListMethod<Map<String, dynamic>>("queryProviders");
-    if (raw == null) return const [];
-    return raw.map(Provider.fromJson).toList();
-  }
-
-  Future<void> updateProvider({
-    required ProviderType type,
-    required String name,
-  }) async {
-    await _channel.invokeMethod("updateProvider", {
-      "type": type.name,
-      "name": name,
-    });
-  }
-
-  Future<List<String>> queryGroupNames({
-    bool excludeNotSelectable = false,
-  }) async {
-    final raw = await _channel.invokeListMethod<String>(
-      "queryGroupNames",
-      {"excludeNotSelectable": excludeNotSelectable},
-    );
-    return raw ?? const [];
-  }
-
-  Future<ProxyGroup?> queryGroup({
-    required String name,
-    dynamic? proxySort,
-  }) async {
-    final raw = await _channel.invokeMapMethod<String, dynamic>("queryGroup", {
-      "name": name,
-      "proxySort": proxySort,
-    });
-    if (raw == null) return null;
-    return ProxyGroup.fromJson(raw);
   }
 
   Future<bool> patchSelector(String groupName, Proxy? proxy) async {

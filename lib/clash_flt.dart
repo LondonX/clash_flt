@@ -1,12 +1,12 @@
-import 'dart:convert';
 import 'dart:io';
 
-import 'package:clash_flt/entity/profile.dart';
-import 'package:clash_flt/entity/proxy.dart';
+import 'package:clash_flt/util/health_checker.dart';
+import 'package:clash_flt/util/profile_resolver.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_emoji/flutter_emoji.dart';
-import 'package:yaml/yaml.dart';
+
+import 'entity/profile.dart';
+import 'entity/proxy.dart';
 
 export 'entity/profile.dart';
 
@@ -14,7 +14,7 @@ class ClashFlt {
   static ClashFlt? _instance;
   static ClashFlt get instance => _instance ??= ClashFlt._();
 
-  late final Directory homeDir;
+  Directory homeDir = Directory("");
 
   final profileFile = ValueNotifier<File?>(null);
   final profileDownloading = ValueNotifier<bool>(false);
@@ -22,6 +22,7 @@ class ClashFlt {
   final countryDBDownloading = ValueNotifier<bool>(false);
   final profile = ValueNotifier<Profile?>(null);
   final profileResolving = ValueNotifier<bool>(false);
+  final healthChecking = ValueNotifier<bool>(false);
 
   init(Directory homeDir) {
     this.homeDir = homeDir;
@@ -51,32 +52,11 @@ class ClashFlt {
   }
 
   Future<bool> resolveProfile([File? file]) async {
-    final profileFileValue = file ?? profileFile.value;
-    if (profileFileValue == null) return false;
+    final safeFile = file ?? profileFile.value;
     profileResolving.value = true;
-    try {
-      final yaml = await profileFileValue.readAsString();
-      final parser = EmojiParser();
-      final emojis = parser.parseEmojis(yaml).toSet();
-      String unemojiYaml = yaml;
-      for (var emoji in emojis) {
-        final yamlSafeEmoji =
-            parser.unemojify(emoji).replaceAll(":", "<EMOJI>");
-        unemojiYaml = unemojiYaml.replaceAll(emoji, yamlSafeEmoji);
-      }
-      final YamlMap yamlMap = loadYaml(unemojiYaml, recover: true);
-      final unemojiJson = json.encode(yamlMap);
-      final emojiJson = parser.emojify(unemojiJson.replaceAll("<EMOJI>", ":"));
-      final map = json.decode(emojiJson);
-      map["file-path"] = profileFileValue.path;
-      profile.value = Profile.fromJson(map);
-      profileResolving.value = false;
-      return true;
-    } catch (e, stackTrace) {
-      debugPrintStack(stackTrace: stackTrace);
-    }
+    profile.value = await ProfileResolver.resolveProfile(safeFile);
     profileResolving.value = false;
-    return false;
+    return profile.value != null;
   }
 
   Future<File> polluteCountryDB(String assetName) async {
@@ -115,16 +95,38 @@ class ClashFlt {
   }
 
   Proxy findProxy(String name) {
+    final proxyGroups = profile.value?.proxyGroups ?? [];
+    try {
+      final group = proxyGroups.firstWhere((element) => element.name == name);
+      return Proxy(name: group.name, type: "url-test", server: "");
+    } catch (_) {}
     final proxies = profile.value?.proxies ?? [];
     return proxies.firstWhere((element) => element.name == name);
   }
+
+  Future<bool> healthCheck(Proxy proxy) async {
+    healthChecking.value = true;
+    await HealthChecker.healthCheck(proxy);
+    healthChecking.value = false;
+    return proxy.delay != null;
+  }
+
+  Future<bool> healthCheckAll() async {
+    final proxies = profile.value?.proxies;
+    if (proxies == null) return false;
+    if (proxies.isEmpty) return true;
+    healthChecking.value = true;
+    await HealthChecker.healthCheckAll(proxies);
+    healthChecking.value = false;
+    return true;
+  }
 }
 
+HttpClient _httpClient = HttpClient()
+  ..connectionTimeout = const Duration(seconds: 20);
 Future<bool> _download(Uri uri, File file) async {
   try {
-    HttpClient httpClient = HttpClient();
-    httpClient.connectionTimeout = const Duration(seconds: 20);
-    var request = await httpClient.getUrl(uri);
+    var request = await _httpClient.getUrl(uri);
     var response = await request.close();
     if (response.statusCode ~/ 100 == 2) {
       var bytes = await consolidateHttpClientResponseBytes(response);

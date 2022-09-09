@@ -2,7 +2,6 @@ import 'dart:io';
 
 import 'package:clash_flt/clash_flt.dart';
 import 'package:clash_flt/entity/traffic.dart';
-import 'package:clash_flt/entity/tunnel_state.dart';
 import 'package:flutter/material.dart';
 import 'package:path_provider/path_provider.dart';
 
@@ -18,7 +17,6 @@ class PluginFunctionsView extends StatefulWidget {
 class _PluginFunctionsViewState extends State<PluginFunctionsView> {
   bool _clashInited = false;
 
-  TunnelState? _tunnelState;
   Traffic _trafficNow = Traffic.zero;
   Traffic _trafficTotal = Traffic.zero;
 
@@ -123,6 +121,20 @@ class _PluginFunctionsViewState extends State<PluginFunctionsView> {
                 ClashFlt.instance.resolveProfile();
               },
             );
+          },
+        ),
+        ListTile(
+          title: const Text("Resolve profile"),
+          subtitle: ValueListenableBuilder<bool>(
+            valueListenable: ClashFlt.instance.healthChecking,
+            builder: (context, isChecking, child) {
+              return Text(
+                isChecking ? "Checking" : "ClashFlt.healthCheckAll",
+              );
+            },
+          ),
+          onTap: () {
+            ClashFlt.instance.healthCheckAll();
           },
         ),
       ],

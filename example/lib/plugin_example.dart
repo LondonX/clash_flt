@@ -1,8 +1,7 @@
-import 'package:clash_flt/clash_channel.dart';
-import 'package:clash_flt/entity/fetch_status.dart';
+import 'package:clash_flt/clash_flt.dart';
+import 'package:clash_flt/entity/proxy_group.dart';
 import 'package:clash_flt_example/named_proxy_group_view.dart';
 import 'package:clash_flt_example/plugin_functions_view.dart';
-import 'package:clash_flt_example/sensitive_info.dart';
 import 'package:flutter/material.dart';
 
 class PluginExample extends StatefulWidget {
@@ -14,46 +13,31 @@ class PluginExample extends StatefulWidget {
 
 class _PluginExampleState extends State<PluginExample>
     with TickerProviderStateMixin {
-  final _clash = ClashChannel.instance;
-  FetchStatus? _fetchStatus;
-  final _groupNames = <String>[];
+  final _groups = <ProxyGroup>[];
 
   late TabController _uiTab = TabController(length: 1, vsync: this);
 
-  _fetch() async {
+  _profileChange() {
+    final groups = ClashFlt.instance.profile.value?.proxyGroups ?? [];
     setState(() {
-      _fetchStatus = null;
-      _groupNames.clear();
-      _uiTab.dispose();
-      _uiTab = TabController(length: 1, vsync: this);
-    });
-    await _clash.fetchAndValid(
-      url: clashProfileUrl,
-      force: false,
-      reportStatus: (p0) {
-        setState(() {
-          _fetchStatus = p0;
-        });
-      },
-    );
-    setState(() {
-      _fetchStatus = null;
-    });
-    await _clash.load();
-    final groupNames = await _clash.queryGroupNames();
-    setState(() {
-      _groupNames
+      _groups
         ..clear()
-        ..addAll(groupNames);
-      _uiTab.dispose();
-      _uiTab = TabController(length: groupNames.length + 1, vsync: this);
+        ..addAll(groups);
     });
+    _uiTab = TabController(length: 1 + groups.length, vsync: this);
+  }
+
+  @override
+  void initState() {
+    ClashFlt.instance.profile.addListener(_profileChange);
+    super.initState();
   }
 
   @override
   void dispose() {
     _uiTab.dispose();
     super.dispose();
+    ClashFlt.instance.profile.removeListener(_profileChange);
   }
 
   @override
@@ -64,7 +48,7 @@ class _PluginExampleState extends State<PluginExample>
         bottom: TabBar(
           tabs: [
             "Plugin Functions",
-            ..._groupNames,
+            ..._groups.map((e) => e.name),
           ].map((e) => Tab(text: e)).toList(),
           controller: _uiTab,
         ),
@@ -76,24 +60,8 @@ class _PluginExampleState extends State<PluginExample>
             controller: _uiTab,
             children: [
               const PluginFunctionsView(),
-              ..._groupNames.map((e) => NamedProxyGroupView(groupName: e))
+              ..._groups.map((e) => NamedProxyGroupView(group: e))
             ],
-          ),
-          Positioned(
-            right: 16,
-            bottom: 16,
-            child: FloatingActionButton.extended(
-              onPressed: _fetchStatus != null ? null : _fetch,
-              icon: _fetchStatus == null
-                  ? const Icon(Icons.download)
-                  : SizedBox.square(
-                      dimension: 24,
-                      child: CircularProgressIndicator(
-                        color: Theme.of(context).colorScheme.onPrimary,
-                      ),
-                    ),
-              label: Text(_fetchStatus?.action.name ?? "Fetch"),
-            ),
           ),
         ],
       ),

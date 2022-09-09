@@ -7,7 +7,7 @@ class Proxy {
   final String name;
   final String type;
   final String server;
-  final int? delay;
+  Duration? delay;
   Proxy({
     required this.name,
     required this.type,

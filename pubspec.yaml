@@ -15,6 +15,7 @@ dependencies:
   json_annotation:
   yaml:
   flutter_emoji:
+  dart_ping:
 
 dev_dependencies:
   flutter_test:
