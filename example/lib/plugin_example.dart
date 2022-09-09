@@ -1,12 +1,9 @@
-import 'dart:io';
-
-import 'package:clash_flt/clash_flt.dart';
+import 'package:clash_flt/clash_channel.dart';
 import 'package:clash_flt/entity/fetch_status.dart';
 import 'package:clash_flt_example/named_proxy_group_view.dart';
 import 'package:clash_flt_example/plugin_functions_view.dart';
 import 'package:clash_flt_example/sensitive_info.dart';
 import 'package:flutter/material.dart';
-import 'package:path_provider/path_provider.dart';
 
 class PluginExample extends StatefulWidget {
   const PluginExample({Key? key}) : super(key: key);
@@ -17,7 +14,7 @@ class PluginExample extends StatefulWidget {
 
 class _PluginExampleState extends State<PluginExample>
     with TickerProviderStateMixin {
-  final _clash = ClashFlt.instance;
+  final _clash = ClashChannel.instance;
   FetchStatus? _fetchStatus;
   final _groupNames = <String>[];
 

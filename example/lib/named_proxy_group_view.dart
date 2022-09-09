@@ -1,3 +1,4 @@
+import 'package:clash_flt/clash_channel.dart';
 import 'package:clash_flt/clash_flt.dart';
 import 'package:clash_flt/entity/proxy.dart';
 import 'package:clash_flt/entity/proxy_group.dart';
@@ -17,7 +18,7 @@ class NamedProxyGroupView extends StatefulWidget {
 }
 
 class _NamedProxyGroupViewState extends State<NamedProxyGroupView> {
-  final _clash = ClashFlt.instance;
+  final _clash = ClashChannel.instance;
   ProxyGroup? _proxyGroup;
   Proxy? _selectedProxy;
 
@@ -66,7 +67,7 @@ class _NamedProxyGroupViewState extends State<NamedProxyGroupView> {
   }
 
   Widget _buildItem(BuildContext context, int index) {
-    final proxy = _proxyGroup!.proxies[index];
+    final proxy = ClashFlt.instance.findProxy(_proxyGroup!.proxies[index]);
     return ProxyView(
       proxy: proxy,
       isActived: _selectedProxy?.uniqueKey == proxy.uniqueKey,

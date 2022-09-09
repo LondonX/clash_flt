@@ -15,7 +15,7 @@ class ProxyView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final textTheme = Theme.of(context).textTheme;
-    final isTimeout = proxy.delay >= 0xFFFF;
+    final isTimeout = proxy.delay == null;
     return Card(
       margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       child: InkWell(
@@ -32,10 +32,9 @@ class ProxyView extends StatelessWidget {
                   children: [
                     Text(proxy.name),
                     const SizedBox(height: 8),
-                    Text(proxy.subtitle, style: textTheme.caption),
+                    Text(proxy.type, style: textTheme.caption),
                     const SizedBox(height: 8),
-                    Text(
-                        "${proxy.type.name} | ${isTimeout ? "timeout" : "${proxy.delay}ms"}"),
+                    Text(isTimeout ? "timeout" : "${proxy.delay}ms"),
                   ],
                 ),
               ),

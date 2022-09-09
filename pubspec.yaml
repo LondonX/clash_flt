@@ -11,8 +11,10 @@ dependencies:
   flutter:
     sdk: flutter
   plugin_platform_interface: ^2.0.2
-  json_serializable: ^6.3.1
-  json_annotation: ^4.6.0
+  json_serializable:
+  json_annotation:
+  yaml:
+  flutter_emoji:
 
 dev_dependencies:
   flutter_test:

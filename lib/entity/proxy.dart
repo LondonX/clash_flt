@@ -5,16 +5,14 @@ part 'proxy.g.dart';
 @JsonSerializable()
 class Proxy {
   final String name;
-  final String title;
-  final String subtitle;
-  final ProxyType type;
-  final int delay;
+  final String type;
+  final String server;
+  final int? delay;
   Proxy({
     required this.name,
-    required this.title,
-    required this.subtitle,
     required this.type,
-    required this.delay,
+    required this.server,
+    this.delay,
   });
 
   factory Proxy.fromJson(Map<String, dynamic> json) {
@@ -27,10 +25,10 @@ class Proxy {
 
   @override
   String toString() {
-    return 'Proxy(name: $name, title: $title, subtitle: $subtitle, type: $type, delay: $delay)';
+    return 'Proxy(name: $name, type: $type, server: $server, delay: $delay)';
   }
 
-  String get uniqueKey => "n:${name}t:${title}st:${subtitle}ty:${type.name}";
+  String get uniqueKey => "n:${name}t:${type}s:$server";
 }
 
 enum ProxyType {

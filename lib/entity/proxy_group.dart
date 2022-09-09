@@ -1,28 +1,23 @@
 import 'package:json_annotation/json_annotation.dart';
 
-import 'proxy.dart';
-
 part 'proxy_group.g.dart';
 
 @JsonSerializable()
 class ProxyGroup {
-  final ProxyType type;
-  final List<Proxy> proxies;
-  final String now;
+  final String name;
+  final String type;
+  final List<String> proxies;
+  final String? url; //only url-test
+  final int? interval;
   ProxyGroup({
+    required this.name,
     required this.type,
     required this.proxies,
-    required this.now,
+    required this.url,
+    this.interval,
   });
 
   factory ProxyGroup.fromJson(Map<String, dynamic> json) {
-    //fix cast issue
-    final proxies = (json['proxies'] as List)
-        .map(
-          (e) => Map<String, dynamic>.from(e),
-        )
-        .toList();
-    json['proxies'] = proxies;
     return _$ProxyGroupFromJson(json);
   }
 
@@ -31,10 +26,7 @@ class ProxyGroup {
   }
 
   @override
-  String toString() => 'ProxyGroup(type: $type, proxies: $proxies, now: $now)';
-}
-
-enum ProxySort {
-  title,
-  delay,
+  String toString() {
+    return 'ProxyGroup(name: $name, type: $type, proxies: $proxies, url: $url, interval: $interval)';
+  }
 }
