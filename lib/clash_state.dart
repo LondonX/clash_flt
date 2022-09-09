@@ -1,13 +1,10 @@
 import 'package:flutter/material.dart';
 
-import 'entity/proxy.dart';
-
 class ClashState {
-  final isRunning = ValueNotifier<Toggle>(Toggle.enabling);
-  final selectedProxy = ValueNotifier<Proxy?>(null);
+  final isRunning = ValueNotifier<LazyState>(LazyState.enabling);
 }
 
-enum Toggle {
+enum LazyState {
   enabled,
   disabled,
   enabling,

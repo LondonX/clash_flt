@@ -1,11 +1,14 @@
+import 'dart:convert';
 import 'dart:io';
 
+import 'package:clash_flt/clash_channel.dart';
 import 'package:clash_flt/entity/proxy_group.dart';
 import 'package:clash_flt/util/health_checker.dart';
 import 'package:clash_flt/util/profile_resolver.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 
+import 'clash_state.dart';
 import 'entity/profile.dart';
 import 'entity/proxy.dart';
 
@@ -28,8 +31,12 @@ class ClashFlt {
   final _selectedProxyGroupName = ValueNotifier<String?>(null);
   final _selectedProxyName = ValueNotifier<String?>(null);
 
-  init(Directory homeDir) {
+  final _channel = ClashChannel.instance;
+  ClashState get state => _channel.state;
+
+  Future<void> init(Directory homeDir) async {
     this.homeDir = homeDir;
+    await _channel.syncState();
   }
 
   ClashFlt._();
@@ -74,19 +81,19 @@ class ClashFlt {
     return profile.value != null;
   }
 
-  Future<File> polluteCountryDB(String assetName) async {
+  Future<void> polluteCountryDB(String assetName) async {
     countryDBDownloading.value = true;
     final data = await rootBundle.load(assetName);
     File target = File(
       "${homeDir.path}${Platform.pathSeparator}country${Platform.pathSeparator}Country.mmdb",
     );
-    if (!await target.exists()) target.create(recursive: true);
+    if (!await target.exists()) await target.create(recursive: true);
     await target.writeAsBytes(data.buffer.asUint8List());
     countryDBDownloading.value = false;
-    return target;
+    countryDBFile.value = target;
   }
 
-  Future<File?> downloadCountryDB({
+  Future<bool> downloadCountryDB({
     String url =
         "https://github.com/Dreamacro/maxmind-geoip/releases/latest/download/Country.mmdb",
     bool isForce = false,
@@ -97,16 +104,18 @@ class ClashFlt {
       "${homeDir.path}${Platform.pathSeparator}country${Platform.pathSeparator}$fileName",
     );
     if (await target.exists() && !isForce) {
-      return target;
+      countryDBFile.value = target;
+      return true;
     }
     countryDBDownloading.value = true;
     await target.create(recursive: true);
     final downloaded = await _download(uri, target);
     countryDBDownloading.value = false;
     if (downloaded) {
-      return target;
+      countryDBFile.value = target;
+      return true;
     }
-    return null;
+    return false;
   }
 
   Proxy findProxy(String name) {
@@ -164,12 +173,49 @@ class ClashFlt {
     return _selectedProxyGroupName.value == group.name;
   }
 
-  _applyConfig() {
+  Future<bool> startClash() async {
+    final applied = await _applyConfig();
+    if (!applied) return false;
+    return await _channel.startClash();
+  }
+
+  Future<void> stopClash() async {
+    await _channel.stopClash();
+  }
+
+  Future<bool> _applyConfig() async {
+    final clashHome = homeDir.path;
+    final profilePath = profile.value?.filePath;
+    final countryDBPath = countryDBFile.value?.path;
     final groupName = _selectedProxyGroupName.value;
     final proxyName = _selectedProxyName.value;
-    if (kDebugMode) {
-      print("[ClashFlt]applyConfig groupName: $groupName, proxy: $proxyName");
+    if (profilePath == null) {
+      _debugPrint("[ClashFlt]applyConfig failed!!! profilePath is null.");
+      return false;
     }
+    if (countryDBPath == null) {
+      _debugPrint("[ClashFlt]applyConfig failed!!! countryDBPath is null.");
+      return false;
+    }
+    if (groupName == null) {
+      _debugPrint("[ClashFlt]applyConfig failed!!! groupName is null.");
+      return false;
+    }
+    if (proxyName == null) {
+      _debugPrint("[ClashFlt]applyConfig failed!!! proxyName is null.");
+      return false;
+    }
+    final map = {
+      "clashHome": clashHome,
+      "profilePath": profilePath,
+      "countryDBPath": countryDBPath,
+      "groupName": groupName,
+      "proxyName": proxyName,
+    };
+    final cfgJson = json.encode(map);
+    _debugPrint("[ClashFlt]applyConfig: $cfgJson");
+    _channel.applyConfig(map);
+    return true;
   }
 
   ProxyGroup? _findUrlTestGroup() {
@@ -193,13 +239,17 @@ Future<bool> _download(Uri uri, File file) async {
       await file.writeAsBytes(bytes);
       return true;
     } else {
-      if (kDebugMode) {
-        print("[ClashFlt]Download failed status: ${response.statusCode}");
-      }
+      _debugPrint("[ClashFlt]Download failed status: ${response.statusCode}");
       return false;
     }
   } catch (ex, stackTrace) {
     debugPrintStack(stackTrace: stackTrace);
     return false;
   }
+}
+
+_debugPrint(Object? obj) {
+  if (kReleaseMode) return;
+  // ignore: avoid_print
+  print(obj);
 }

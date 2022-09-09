@@ -1,20 +1,13 @@
 package com.LondonX.clash_flt
 
 import android.app.Activity
-import android.app.Application
 import android.content.Intent
 import android.net.VpnService
 import android.os.Handler
 import android.os.Looper
 import androidx.annotation.NonNull
+import androidx.core.content.edit
 import com.LondonX.clash_flt.service.ClashVpnService
-import com.LondonX.clash_flt.util.toMap
-import com.LondonX.clash_flt.util.toProviderType
-import com.LondonX.clash_flt.util.toProxySort
-import com.LondonX.clash_flt.util.toProxyType
-import com.github.kr328.clash.common.Global
-import com.github.kr328.clash.core.Clash
-import com.github.kr328.clash.core.model.Proxy
 import io.flutter.embedding.engine.plugins.FlutterPlugin
 import io.flutter.embedding.engine.plugins.activity.ActivityAware
 import io.flutter.embedding.engine.plugins.activity.ActivityPluginBinding
@@ -24,7 +17,6 @@ import io.flutter.plugin.common.MethodChannel.MethodCallHandler
 import io.flutter.plugin.common.MethodChannel.Result
 import io.flutter.plugin.common.PluginRegistry
 import kotlinx.coroutines.*
-import java.io.File
 import kotlin.coroutines.resume
 
 private const val ACTION_PREPARE_VPN = 0xF1
@@ -37,7 +29,6 @@ class ClashFltPlugin : FlutterPlugin, MethodCallHandler, ActivityAware,
     private val logSubs = hashMapOf<String, Job>()
 
     override fun onAttachedToEngine(@NonNull flutterPluginBinding: FlutterPlugin.FlutterPluginBinding) {
-        Global.init(flutterPluginBinding.applicationContext as Application)
         channel = MethodChannel(flutterPluginBinding.binaryMessenger, "clash_flt")
         channel.setMethodCallHandler(this)
     }
@@ -45,141 +36,49 @@ class ClashFltPlugin : FlutterPlugin, MethodCallHandler, ActivityAware,
     override fun onMethodCall(@NonNull call: MethodCall, @NonNull result: Result) {
         val callbackKey = call.argument<String>("callbackKey")
         when (call.method) {
-            "reset" -> {
-                Clash.reset()
-                result.success(null)
-            }
-            "forceGc" -> {
-                Clash.forceGc()
-                result.success(null)
-            }
-            "suspendCore" -> {
-                val suspended = call.argument<Boolean>("suspended")!!
-                Clash.suspendCore(suspended)
-                result.success(null)
-            }
-            "queryTunnelState" -> {
-                val tunState = Clash.queryTunnelState()
-                result.success(tunState.toMap())
-            }
             "queryTrafficNow" -> {
-                val traffic = Clash.queryTrafficNow()
-                result.success(traffic.toMap())
+                nullableClashServiceScope(result) {
+                    result.success(
+                        mapOf(
+                            "up" to (it?.trafficNowUp ?: 0L),
+                            "down" to (it?.trafficNowDown ?: 0L),
+                        )
+                    )
+                }
             }
             "queryTrafficTotal" -> {
-                val traffic = Clash.queryTrafficTotal()
-                result.success(traffic.toMap())
-            }
-            "notifyDnsChanged" -> {
-                val path = call.argument<List<String>>("dns")!!
-                Clash.notifyDnsChanged(path)
-                result.success(null)
-            }
-            "notifyTimeZoneChanged" -> {
-                val name = call.argument<String>("name")!!
-                val offset = call.argument<Int>("offset")!!
-                Clash.notifyTimeZoneChanged(name, offset)
-                result.success(null)
-            }
-            "notifyInstalledAppsChanged" -> {
-                result.notImplemented()
-            }
-            "healthCheck" -> {
-                val name = call.argument<String>("name")!!
-                Clash.healthCheck(name)
-                result.success(null)
-            }
-            "healthCheckAll" -> {
-                Clash.healthCheckAll()
-                result.success(null)
-            }
-            "queryOverride" -> {
-                result.notImplemented()
-            }
-            "installSideloadGeoip" -> {
-                val path = call.argument<String>("path")!!
-                val data = File(path).readBytes()
-                Clash.installSideloadGeoip(data)
-                result.success(null)
-            }
-            "subscribeLogcat" -> {
-                logSubs[callbackKey]?.cancel()
-                logSubs[callbackKey!!] = scope.launch {
-                    while (isActive) {
-                        val message = Clash.subscribeLogcat().receive()
-                        callbackWithKey(callbackKey, message.toMap())
-                    }
+                nullableClashServiceScope(result) {
+                    result.success(
+                        mapOf(
+                            "up" to (it?.trafficTotalUp ?: 0L),
+                            "down" to (it?.trafficTotalDown ?: 0L),
+                        )
+                    )
                 }
             }
-            "unsubscribeLogcat" -> {
-                logSubs[callbackKey]?.cancel()
-                logSubs.remove(callbackKey)
-            }
-            "fetchAndValid" -> {
-                val url = call.argument<String>("url")!!
-                val force = call.argument<Boolean>("force")!!
-                val profilesDir = File(activity!!.filesDir, "profiles")
-                profilesDir.mkdirs()
-                Clash.fetchAndValid(profilesDir, url, force) {
-                    uiHandler.post {
-                        callbackWithKey(callbackKey, it.toMap())
-                    }
-                }.result(result, "Clash.fetchAndValid")
-            }
-            "load" -> {
-                val profilesDir = File(activity!!.filesDir, "profiles")
-                profilesDir.mkdirs()
-                Clash.load(profilesDir).result(result, "Clash.load")
-            }
-            "queryProviders" -> {
-                val providers = Clash.queryProviders()
-                result.success(providers.map { it.toMap() })
-            }
-            "updateProvider" -> {
-                val name = call.argument<String>("name")!!
-                val type = call.argument<String>("type")?.toProviderType() ?: return result.error(
-                    "Clash.updateProvider",
-                    "Supported type!!!",
-                    null,
-                )
-                Clash.updateProvider(type, name)
-            }
-            "queryGroupNames" -> {
-                val excludeNotSelectable = call.argument<Boolean>("excludeNotSelectable")!!
-                val names = Clash.queryGroupNames(excludeNotSelectable)
-                result.success(names)
-            }
-            "queryGroup" -> {
-                val name = call.argument<String>("name")!!
-                val proxySort = call.argument<String>("proxySort").toProxySort()
-                val group = Clash.queryGroup(name, proxySort)
-                result.success(group.toMap())
-            }
-            "patchSelector" -> {
+            "applyConfig" -> {
+                val clashHome = call.argument<String>("clashHome")
+                val profilePath = call.argument<String>("profilePath")
+                val countryDBPath = call.argument<String>("countryDBPath")
                 val groupName = call.argument<String>("groupName")
-                val name = call.argument<String>("name")
-                val title = call.argument<String>("title")
-                val subtitle = call.argument<String>("subtitle")
-                val type = call.argument<String>("type").toProxyType()
-                val delay = call.argument<Int>("delay")
-                val proxy =
-                    if (name == null || title == null || subtitle == null || delay == null) {
-                        null
-                    } else {
-                        Proxy(name, title, subtitle, type, delay)
-                    }
-                if (groupName == null || proxy == null) {
-                    result.success(false)
-                    return
+                val proxyName = call.argument<String>("proxyName")
+                activity?.getSharedPreferences("clash_fit.xml", Activity.MODE_PRIVATE)?.edit {
+                    putString("clashHome", clashHome)
+                    putString("profilePath", profilePath)
+                    putString("countryDBPath", countryDBPath)
+                    putString("groupName", groupName)
+                    putString("proxyName", proxyName)
                 }
-                clashServiceScope(result) {
-                    val patched = it.patchSelector(groupName, proxy)
-                    result.success(patched)
+                result.success(true)
+                nullableClashServiceScope(result) {
+                    if (it?.isRunning == true) {
+                        it.notifyConfigChanged()
+                    }
                 }
             }
             "isClashRunning" -> {
-                clashServiceScope(result) {
-                    result.success(it.isRunning())
+                nullableClashServiceScope(result) {
+                    result.success(it?.isRunning == true)
                 }
             }
             "startClash" -> {
@@ -206,7 +105,6 @@ class ClashFltPlugin : FlutterPlugin, MethodCallHandler, ActivityAware,
     override fun onDetachedFromEngine(@NonNull binding: FlutterPlugin.FlutterPluginBinding) {
         scope.cancel()
         channel.setMethodCallHandler(null)
-        Global.destroy()
     }
 
     private fun callbackWithKey(callbackKey: String?, params: Map<String, Any?>) {
@@ -255,6 +153,21 @@ class ClashFltPlugin : FlutterPlugin, MethodCallHandler, ActivityAware,
         activity.startActivityForResult(prepareIntent, ACTION_PREPARE_VPN)
         return suspendCancellableCoroutine {
             vpnPreparing = it
+        }
+    }
+
+    private fun nullableClashServiceScope(
+        result: Result,
+        withService: suspend CoroutineScope.(ClashVpnService?) -> Unit,
+    ) {
+        val activity = this.activity
+        if (activity == null) {
+            result.error("Clash.startClash", "activity is null!!!", null)
+            return
+        }
+        scope.launch {
+            val service = ClashVpnService.nullableInstance()
+            withService.invoke(this, service)
         }
     }
 

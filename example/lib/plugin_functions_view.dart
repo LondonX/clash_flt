@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:clash_flt/clash_flt.dart';
+import 'package:clash_flt/clash_state.dart';
 import 'package:clash_flt/entity/traffic.dart';
 import 'package:flutter/material.dart';
 import 'package:path_provider/path_provider.dart';
@@ -25,7 +26,7 @@ class _PluginFunctionsViewState extends State<PluginFunctionsView> {
     final clashHome =
         Directory("${filesDir.path}${Platform.pathSeparator}clash");
     await clashHome.create();
-    ClashFlt.instance.init(clashHome);
+    await ClashFlt.instance.init(clashHome);
     setState(() {
       _clashInited = true;
     });
@@ -124,7 +125,7 @@ class _PluginFunctionsViewState extends State<PluginFunctionsView> {
           },
         ),
         ListTile(
-          title: const Text("Resolve profile"),
+          title: const Text("Health Check"),
           subtitle: ValueListenableBuilder<bool>(
             valueListenable: ClashFlt.instance.healthChecking,
             builder: (context, isChecking, child) {
@@ -135,6 +136,26 @@ class _PluginFunctionsViewState extends State<PluginFunctionsView> {
           ),
           onTap: () {
             ClashFlt.instance.healthCheckAll();
+          },
+        ),
+        ValueListenableBuilder<LazyState>(
+          valueListenable: ClashFlt.instance.state.isRunning,
+          builder: (context, value, child) {
+            return SwitchListTile(
+              title: const Text("VPN enabled"),
+              subtitle: const Text("ClashFlt.startClash | ClashFlt.stopClash"),
+              value: value == LazyState.enabled || value == LazyState.disabling,
+              onChanged:
+                  value == LazyState.enabling || value == LazyState.disabling
+                      ? null
+                      : (v) {
+                          if (v) {
+                            ClashFlt.instance.startClash();
+                          } else {
+                            ClashFlt.instance.stopClash();
+                          }
+                        },
+            );
           },
         ),
       ],
