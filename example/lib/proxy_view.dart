@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 class ProxyView extends StatelessWidget {
   final Proxy proxy;
   final bool isActived;
-  final Function(Proxy) onTap;
+  final Function(Proxy)? onTap;
   final Function(Proxy) healthCheck;
   const ProxyView({
     Key? key,
@@ -20,9 +20,11 @@ class ProxyView extends StatelessWidget {
     return Card(
       margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       child: InkWell(
-        onTap: () {
-          onTap(proxy);
-        },
+        onTap: onTap == null
+            ? null
+            : () {
+                onTap!(proxy);
+              },
         child: Padding(
           padding: const EdgeInsets.all(8),
           child: Row(

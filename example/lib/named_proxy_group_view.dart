@@ -17,11 +17,12 @@ class NamedProxyGroupView extends StatefulWidget {
 }
 
 class _NamedProxyGroupViewState extends State<NamedProxyGroupView> {
-  Proxy? _selectedProxy;
   final _proxies = <Proxy>[];
 
   _selectProxy(Proxy proxy) {
-    //TODO
+    setState(() {
+      ClashFlt.instance.selectProxy(widget.group, proxy);
+    });
   }
 
   _healthCheck(Proxy proxy) async {
@@ -62,10 +63,13 @@ class _NamedProxyGroupViewState extends State<NamedProxyGroupView> {
 
   Widget _buildItem(BuildContext context, int index) {
     final proxy = _proxies[index];
+    final isSelected = ClashFlt.instance.isProxySelected(widget.group, proxy);
+    final isSelectable =
+        ClashFlt.instance.isProxySelectable(widget.group, proxy);
     return ProxyView(
       proxy: proxy,
-      isActived: _selectedProxy?.uniqueKey == proxy.uniqueKey,
-      onTap: _selectProxy,
+      isActived: isSelected,
+      onTap: isSelectable ? _selectProxy : null,
       healthCheck: _healthCheck,
     );
   }

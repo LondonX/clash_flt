@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:clash_flt/entity/proxy_group.dart';
 import 'package:clash_flt/util/health_checker.dart';
 import 'package:clash_flt/util/profile_resolver.dart';
 import 'package:flutter/foundation.dart';
@@ -23,6 +24,9 @@ class ClashFlt {
   final profile = ValueNotifier<Profile?>(null);
   final profileResolving = ValueNotifier<bool>(false);
   final healthChecking = ValueNotifier<bool>(false);
+
+  final _selectedProxyGroupName = ValueNotifier<String?>(null);
+  final _selectedProxyName = ValueNotifier<String?>(null);
 
   init(Directory homeDir) {
     this.homeDir = homeDir;
@@ -56,6 +60,17 @@ class ClashFlt {
     profileResolving.value = true;
     profile.value = await ProfileResolver.resolveProfile(safeFile);
     profileResolving.value = false;
+    if (profile.value == null) return false;
+    //update defaultSelection
+    final currentProxyName = _selectedProxyName.value;
+    final proxies = profile.value?.proxies ?? [];
+    final hasProxy = proxies.any((element) => element.name == currentProxyName);
+    if (!hasProxy) {
+      final defaultGroup = _findUrlTestGroup();
+      _selectedProxyGroupName.value = defaultGroup?.name;
+      _selectedProxyName.value = defaultGroup?.name;
+      _applyConfig();
+    }
     return profile.value != null;
   }
 
@@ -119,6 +134,51 @@ class ClashFlt {
     await HealthChecker.healthCheckAll(proxies);
     healthChecking.value = false;
     return true;
+  }
+
+  selectProxy(ProxyGroup group, Proxy proxy) {
+    if (group.type.toLowerCase() == "url-test") return;
+    if (proxy.type.toLowerCase() == "url-test") {
+      final urlTestGroup = _findUrlTestGroup();
+      if (urlTestGroup == null) return;
+      _selectedProxyGroupName.value = urlTestGroup.name;
+    } else {
+      _selectedProxyGroupName.value = group.name;
+    }
+    _selectedProxyName.value = proxy.name;
+    _applyConfig();
+  }
+
+  bool isProxySelectable(ProxyGroup group, Proxy proxy) {
+    if (group.type.toLowerCase() == "url-test") {
+      return false;
+    }
+    return true;
+  }
+
+  bool isProxySelected(ProxyGroup group, Proxy proxy) {
+    if (_selectedProxyName.value != proxy.name) return false;
+    if (proxy.type.toLowerCase() == "url-test") {
+      return _selectedProxyGroupName.value == proxy.name;
+    }
+    return _selectedProxyGroupName.value == group.name;
+  }
+
+  _applyConfig() {
+    final groupName = _selectedProxyGroupName.value;
+    final proxyName = _selectedProxyName.value;
+    if (kDebugMode) {
+      print("[ClashFlt]applyConfig groupName: $groupName, proxy: $proxyName");
+    }
+  }
+
+  ProxyGroup? _findUrlTestGroup() {
+    final groups = profile.value?.proxyGroups ?? [];
+    try {
+      return groups
+          .firstWhere((element) => element.type.toLowerCase() == "url-test");
+    } catch (_) {}
+    return null;
   }
 }
 
