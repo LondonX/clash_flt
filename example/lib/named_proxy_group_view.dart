@@ -27,7 +27,7 @@ class _NamedProxyGroupViewState extends State<NamedProxyGroupView> {
 
   _healthCheck(Proxy proxy) async {
     await ClashFlt.instance.healthCheck(proxy);
-    setState(() {});
+    if (mounted) setState(() {});
   }
 
   _mapProxies() {

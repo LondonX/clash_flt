@@ -2,13 +2,6 @@
     package="com.LondonX.clash_flt">
 
     <uses-permission android:name="android.permission.INTERNET" />
-    <uses-permission android:name="${applicationId}.permission.RECEIVE_BROADCASTS" />
-
-    <permission
-        android:name="${applicationId}.permission.RECEIVE_BROADCASTS"
-        android:description="@string/receive_broadcasts_of_clash"
-        android:label="@string/receive_clash_broadcasts"
-        android:protectionLevel="privileged|signature" />
 
     <application>
         <service

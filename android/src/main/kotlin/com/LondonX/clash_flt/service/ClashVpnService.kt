@@ -12,8 +12,6 @@ import android.os.ParcelFileDescriptor
 import android.util.Log
 import clash.Clash
 import clash.Client
-import com.LondonX.clash_flt.R
-import com.LondonX.clash_flt.util.parseCIDR
 import kotlinx.coroutines.CancellableContinuation
 import kotlinx.coroutines.suspendCancellableCoroutine
 import org.json.JSONObject
@@ -51,6 +49,7 @@ class ClashVpnService : VpnService() {
 
     private val client = object : Client {
         override fun log(level: String?, message: String?) {
+            Log.i(TAG, "[$level]$message")
         }
 
         override fun traffic(up: Long, down: Long) {
@@ -60,7 +59,7 @@ class ClashVpnService : VpnService() {
             trafficTotalDown += down
         }
     }
-    var vpnFd: ParcelFileDescriptor? = null
+    private var vpnFd: ParcelFileDescriptor? = null
 
     override fun onCreate() {
         super.onCreate()
@@ -103,13 +102,11 @@ class ClashVpnService : VpnService() {
     }
 
     private fun setupVpn(): ParcelFileDescriptor {
-        Log.i(TAG, "setupVpn: start")
         val builder = Builder()
             .addAddress(TUN_GATEWAY, TUN_SUBNET_PREFIX)
             .setBlocking(false)
             .setMtu(TUN_MTU)
             .setSession("Clash")
-            .addDnsServer(TUN_DNS)
             .setConfigureIntent(
                 PendingIntent.getActivity(
                     this,
@@ -120,11 +117,6 @@ class ClashVpnService : VpnService() {
             )
             .allowBypass()
             .apply {
-                // bypassPrivateNetwork
-                resources.getStringArray(R.array.bypass_private_route).map(::parseCIDR).forEach {
-                    addRoute(it.ip, it.prefix)
-                }
-                addRoute(TUN_PORTAL, 32)
                 // Metered
                 if (Build.VERSION.SDK_INT >= 29) {
                     setMetered(false)
@@ -153,10 +145,7 @@ private const val TAG = "ClashVpnService"
 private const val TUN_MTU = 0xFFFF
 private const val TUN_SUBNET_PREFIX = 30
 private const val TUN_GATEWAY = "172.19.0.1"
-private const val TUN_PORTAL = "172.19.0.2"
-private const val TUN_DNS = TUN_PORTAL
 
-//private const val NET_ANY = "0.0.0.0"
 private val HTTP_PROXY_LOCAL_LIST = listOf(
     "localhost",
     "*.local",

@@ -49,7 +49,7 @@ class _PluginFunctionsViewState extends State<PluginFunctionsView> {
           valueListenable: ClashFlt.instance.profileFile,
           builder: (context, profileFile, child) {
             return ListTile(
-              title: const Text("Download Profile"),
+              title: const Text("1. Download Profile"),
               subtitle: ValueListenableBuilder<bool>(
                 valueListenable: ClashFlt.instance.profileDownloading,
                 builder: (context, isDownloading, child) {
@@ -75,7 +75,7 @@ class _PluginFunctionsViewState extends State<PluginFunctionsView> {
           valueListenable: ClashFlt.instance.countryDBFile,
           builder: (context, countryDBFile, child) {
             return ListTile(
-              title: const Text("Download Country DB"),
+              title: const Text("2. Download Country DB from GitHub"),
               subtitle: ValueListenableBuilder<bool>(
                 valueListenable: ClashFlt.instance.countryDBDownloading,
                 builder: (context, isDownloading, child) {
@@ -95,8 +95,10 @@ class _PluginFunctionsViewState extends State<PluginFunctionsView> {
           },
         ),
         ListTile(
-          title: const Text("Download CountryDB from assets"),
-          subtitle: const Text("ClashFlt.polluteCountryDB"),
+          title: const Text("Opt 2. Download CountryDB from assets"),
+          subtitle: const Text(
+            "Call ClashFlt.polluteCountryDB if cannot download from GitHub.",
+          ),
           onTap: () async {
             ClashFlt.instance.polluteCountryDB("assets/Country.mmdb");
           },
@@ -105,7 +107,7 @@ class _PluginFunctionsViewState extends State<PluginFunctionsView> {
           valueListenable: ClashFlt.instance.profile,
           builder: (context, profile, child) {
             return ListTile(
-              title: const Text("Resolve profile"),
+              title: const Text("3. Resolve profile"),
               subtitle: ValueListenableBuilder<bool>(
                 valueListenable: ClashFlt.instance.profileResolving,
                 builder: (context, isResolving, child) {
@@ -125,7 +127,7 @@ class _PluginFunctionsViewState extends State<PluginFunctionsView> {
           },
         ),
         ListTile(
-          title: const Text("Health Check"),
+          title: const Text("[Optional] Health Check"),
           subtitle: ValueListenableBuilder<bool>(
             valueListenable: ClashFlt.instance.healthChecking,
             builder: (context, isChecking, child) {
@@ -142,7 +144,7 @@ class _PluginFunctionsViewState extends State<PluginFunctionsView> {
           valueListenable: ClashFlt.instance.state.isRunning,
           builder: (context, value, child) {
             return SwitchListTile(
-              title: const Text("VPN enabled"),
+              title: const Text("5. VPN enabled"),
               subtitle: const Text("ClashFlt.startClash | ClashFlt.stopClash"),
               value: value == LazyState.enabled || value == LazyState.disabling,
               onChanged:

@@ -85,7 +85,7 @@ class ClashFlt {
     countryDBDownloading.value = true;
     final data = await rootBundle.load(assetName);
     File target = File(
-      "${homeDir.path}${Platform.pathSeparator}country${Platform.pathSeparator}Country.mmdb",
+      "${homeDir.path}${Platform.pathSeparator}Country.mmdb",
     );
     if (!await target.exists()) await target.create(recursive: true);
     await target.writeAsBytes(data.buffer.asUint8List());
@@ -101,7 +101,7 @@ class ClashFlt {
     final uri = Uri.parse(url);
     final fileName = url.split("/").last;
     File target = File(
-      "${homeDir.path}${Platform.pathSeparator}country${Platform.pathSeparator}$fileName",
+      "${homeDir.path}${Platform.pathSeparator}$fileName",
     );
     if (await target.exists() && !isForce) {
       countryDBFile.value = target;

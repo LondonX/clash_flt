@@ -1,6 +1,6 @@
 # clash_flt
 
-A new Flutter plugin based on [ClashForAndroid](https://github.com/Kr328/ClashForAndroid) and [ClashX](https://github.com/yichengchen/clashX).
+A new Flutter plugin based on [ClashKit](https://github.com/LondonX/clash-kit) and my `ClashKit` is forked from [AppleClash/clash-apple](https://github.com/AppleClash/clash-apple).
 
 # Setup
 ### pubspec.yaml
