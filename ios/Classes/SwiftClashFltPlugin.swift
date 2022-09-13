@@ -1,12 +1,8 @@
 import Flutter
 import UIKit
-import ClashKit
 
 public class SwiftClashFltPlugin: NSObject, FlutterPlugin {
     private let channel: FlutterMethodChannel
-    private var trafficTotal = Traffic(up: 0, down: 0)
-    private var trafficNow = Traffic(up: 0, down: 0)
-    private lazy var clashClient = AppClashClient(trafficListener: self.trafficListener)
     private let vpnManager = VPNManager.shared
     
     init(channel: FlutterMethodChannel) {
@@ -25,102 +21,58 @@ public class SwiftClashFltPlugin: NSObject, FlutterPlugin {
     
     public func handle(_ call: FlutterMethodCall, result: @escaping FlutterResult) {
         let argsMap = call.arguments as? [String : Any]
-        let callbackKey = argsMap?["callbackKey"] as? String
         let callMethod = call.method
         switch(callMethod){
-        case "reset":
-            result(nil)
-            break
-        case "forceGc":
-            result(nil)
-            break
-        case "queryTunnelState":
-            let mode = ClashKit.ClashGetTunnelMode()
-            result(["mode" : mode])
-            break
         case "queryTrafficNow":
-            result(trafficNow.toMap())
+            if (vpnManager.controller == nil) {
+                result(Traffic.zero.toMap())
+                break
+            }
+            Task.init {
+                let traffic = await vpnManager.controller!.queryTrafficNow() ?? Traffic.zero
+                result(traffic.toMap())
+            }
             break
         case "queryTrafficTotal":
-            result(trafficTotal.toMap())
+            if (vpnManager.controller == nil) {
+                result(Traffic.zero.toMap())
+                break
+            }
+            Task.init {
+                let traffic = await vpnManager.controller!.queryTrafficTotal() ?? Traffic.zero
+                result(traffic.toMap())
+            }
             break
-        case "notifyDnsChanged":
-            result(FlutterMethodNotImplemented)
-            break
-        case "notifyTimeZoneChanged":
-            result(FlutterMethodNotImplemented)
-            break
-        case "healthCheck":
-            result(nil)
-//            let name = argsMap?["name"] as! String
-//            Task.init {
-//                clashClient.healthCheck(groupName: name)
-//                result(nil)
-//            }
-            break
-        case "healthCheckAll":
-//            Task.init {
-//                for name in clashClient.proxyGroups.keys {
-//                    clashClient.healthCheck(groupName: name)
-//                }
-//                result(nil)
-//            }
-            result(nil)
-            break
-        case "patchSelector":
+        case "applyConfig":
+            if (argsMap == nil) {
+                result(false)
+                break
+            }
+            
+            let suiteName: String = {
+                let identifier = Bundle.main.infoDictionary?["CFBundleIdentifier"] as! String
+                return "group.\(identifier)"
+            }()
+            let userDefaults = UserDefaults(suiteName: suiteName)!
+            let clashHome = argsMap!["clashHome"] as! String
+            let profilePath = argsMap!["profilePath"] as! String
+            let countryDBPath = argsMap!["countryDBPath"] as! String
             let groupName = argsMap!["groupName"] as! String
-            let name = argsMap!["name"] as! String
-            let map = [groupName : name]
-            let json = JsonUtil.convertFromDictionary(dic: map)
-            let patched = ClashPatchSelector(json?.data(using: .utf8))
-            result(patched)
-            break
-        case "fetchAndValid":
-            let url = argsMap?["url"] as? String
-            let force = argsMap?["force"] as? Bool == true
-            Task.init {
-                callbackWithKey(
-                    callbackKey: callbackKey,
-                    params: FetchStatus(action: .fetchConfiguration).toMap()
-                )
-                let countryDB = await downloadProfile(url: "https://github.com/Dreamacro/maxmind-geoip/releases/latest/download/Country.mmdb", force: false)
-                if(countryDB == nil) {
-                    result(FlutterError(code: "Clash.\(callMethod)", message: "Download countryDB failed!!!", details: nil))
-                    return
-                }
-                let profileFile = await downloadProfile(url: url, force: force)
-                print("downloadProfile result: ", profileFile ?? "")
-                callbackWithKey(
-                    callbackKey: callbackKey,
-                    params: FetchStatus(action: .verifying).toMap()
-                )
-                if(profileFile == nil) {
-                    result(FlutterError(code: "Clash.\(callMethod)", message: "Download profile failed!!!", details: nil))
-                    return
-                }
-                var dir = URL(fileURLWithPath: profileFile!.path)
-                dir.deleteLastPathComponent()
-                do {
-                    let config = try String(contentsOf: profileFile!)
-                    ClashKit.ClashSetup(dir.path, config, clashClient)
-                } catch {
-                    print(error)
-                    result(FlutterError(code: "Clash.\(callMethod)", message: "Profile invalid!!!", details: nil))
-                    return
-                }
-                result(nil)
+            let proxyName = argsMap!["proxyName"] as! String
+            userDefaults.set(clashHome, forKey: "clash_flt_clashHome")
+            userDefaults.set(profilePath, forKey: "clash_flt_profilePath")
+            // /var/mobile/Containers/Data/Application/D308986C-7D80-4691-83B0-C73230D371B4/Library/Application Support/clash/Country.mmdb
+            userDefaults.set(countryDBPath, forKey: "clash_flt_countryDBPath")
+            userDefaults.set(groupName, forKey: "clash_flt_groupName")
+            userDefaults.set(proxyName, forKey: "clash_flt_proxyName")
+            result(true)
+            if (!isClashRunning()) {
+                return
             }
-            break
-        case "load":
-            Task.init {
-                let loaded = clashClient.load()
-                await vpnManager.loadController()
-                result(loaded)
-            }
+            vpnManager.controller?.notifyConfigChanged()
             break
         case "isClashRunning":
-            let connected = vpnManager.controller?.connectionStatus == .connected
-            result(connected)
+            result(isClashRunning())
             break
         case "startClash":
             Task.init {
@@ -142,47 +94,6 @@ public class SwiftClashFltPlugin: NSObject, FlutterPlugin {
             vpnManager.controller?.stopVPN()
             result(nil)
             break
-        case "queryProviders":
-            break
-        case "updateProvider":
-            break
-        case "queryGroupNames":
-            var groupNames = Array<String>(clashClient.proxyGroups.keys)
-            groupNames.sort()
-            result(groupNames)
-            break
-        case "queryGroup":
-            let groupName = argsMap?["name"] as? String
-            let proxySort = argsMap?["proxySort"] as? String
-            let sortByDelay = proxySort == "delay"
-            if (groupName == nil) {
-                result(nil)
-                break
-            }
-            let group = clashClient.proxyGroups[groupName!]
-            if (group == nil) {
-                result(nil)
-                break
-            }
-            if (sortByDelay) {
-                let sortedGroup = ProxyGroup(
-                    type: group!.type,
-                    proxies: Array<Proxy>(group!.proxies).sorted(by: { p0, p1 in
-                        return p0.delay < p1.delay
-                    }),
-                    now: group!.now
-                )
-                result(sortedGroup.toMap())
-            }else{
-                result(group!.toMap())
-            }
-            break;
-        case "installSideloadGeoip":
-            break
-        case "subscribeLogcat":
-            break
-        case "unsubscribeLogcat":
-            break
         default:
             result(FlutterMethodNotImplemented)
         }
@@ -199,11 +110,7 @@ public class SwiftClashFltPlugin: NSObject, FlutterPlugin {
         )
     }
     
-    private func trafficListener(up: Int64, down: Int64) {
-        self.trafficNow = Traffic(up: up, down: down)
-        self.trafficTotal = Traffic(
-            up: self.trafficTotal.up + up,
-            down: self.trafficTotal.down + down
-        )
+    private func isClashRunning() -> Bool {
+        return vpnManager.controller?.connectionStatus == .connected
     }
 }

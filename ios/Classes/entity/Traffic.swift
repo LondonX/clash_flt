@@ -7,7 +7,9 @@
 
 import Foundation
 
-class Traffic : NSObject{
+public class Traffic : NSObject{
+    static let zero = Traffic(up: 0, down: 0)
+    
     let up: Int64
     let down: Int64
     

@@ -17,92 +17,72 @@ dependencies:
 * Open `Runner.xcodeproj`, select `Runner` in `PROJECT` list on the left.
 * In `Build Settings`->`All`->`Architectures`, set value to `arm64`.
 
-3. Add `ClashKit.xcframework`
-* Open `Pods` in Project Navigator.
-* Select `clash_flt` in `TARGETS`
-* Select `General` tab.
-* Add `ClashKit.xcframework` into `Frameworks and Libraries`.
-
-4. Modify `Runner.xcodeproj`
-* Open `Signing & Capabilities` tab.
+3. Modify `Runner.xcodeproj`
+* Open Runner's `Signing & Capabilities` tab.
 * You may need to enable `Network Extension` in [Apple Developer Account page](https://developer.apple.com/account/)/Certificates, IDs & Profiles/Identifiers/YOUR_BUNDLE_ID/Edit/Network Extensions checkbox, before add `Network Extension` and provision.
-* Add `Network Extension` an `Personal VPN`.
+* Add `Network Extension` and `Personal VPN`.
 * Check `App Proxy` and `Packet Tunnel` of `Network Extension`。
 
+4. Add project Target of `Network-Extension`
+* Create a Target named `PacketTunnel`.
+* Open `PacketTunnel`'s `Signing & Capabilities` tab.
+* Add `Network Extension` and `Personal VPN`, just as step 3.
+* Add `ClashKit.xcframework` into `PacketTunnel`'s `Frameworks and Libraries` an select `Embed Without Signing`.
+
+5. Add app group
+* Create a App Group named `group.<yourBundleId>` both in `Runner` and `PacketTunnel` Target.
+  
+
 # Basic usage
-### Fetch clash profile
+### Initialize
 ```dart
-final cacheDir = await getApplicationSupportDirectory();
-// will save into this file
-final profilesDir = Directory("${cacheDir.path}${Platform.pathSeparator}profiles");
-await profilesDir.create(recursive: true);
-await _clash.fetchAndValid(
-    profilesDir: profilesDir,
-    url: clashProfileUrl,
-    force: true,
-    reportStatus: (p0) {
-    setState(() {
-        _fetchStatus = p0;
-    });
-    },
-);
-setState(() {
-    _fetchStatus = null;
-});
+await ClashFlt.instance.init(clashHome);
 ```
-### Load file of clash profile
+### Download and load file of clash profile
 ```dart
-await _clash.load(path: file.path);
+final bool isDownloaded = await ClashFlt.instance.downloadProfile(clashProfileUrl, isForce: true);
+final File? downloadedFile = await ClashFlt.instance.profileFile.value;
+final bool isResolved = await ClashFlt.instance.resolveProfile();
+final Profile? resolvedProfile = await ClashFlt.instance.profile.value;
 ```
-### Get groupNames in profile
+### Get proxy groups and proxy in profile
 ```dart
-final groupNames = await _clash.queryGroupNames();
-```
-### Get proxyGroup by groupName
-```dart
-final proxyGroup = await _clash.queryGroup(name: groupName);
+final Profile? resolvedProfile = await ClashFlt.instance.profile.value;
+final List<ProxyGroup>? groups = resolvedProfile?.proxyGroups;
+final List<Proxy>? proxies = resolvedProfile?.proxies;
+final List<String>? proxyNames = groups?.first.proxies;
+// use ClashFlt.instance.findProxy to link proxy name with Proxy object.
 ```
 ### Selet Proxy
 ```dart
-await _clash.patchSelector(groupName, proxy);
+final ProxyGroup group;//assigned in somewhere else
+final Proxy proxy;//assigned in somewhere else
+if (!ClashFlt.instance.isProxySelectable(group, proxy)) return;
+if(ClashFlt.instance.isProxySelected(group, proxy)) return;
+ClashFlt.instance.selectProxy(group, proxy) return
 ```
 ### Start/Stop Clash VPN service
 ```dart
 // start
-_clash.startClash();
-// stop
-_clash.stopClash();
+final bool isStarted = await ClashFlt.instance.startClash();
+// stop(no value return)
+await ClashFlt.instance.stopClash();
 ```
 
 # Supported APIs
-| API                       | Android | iOS |
-| ------------------------- | ------- | --- |
-| reset                     | ✅       | ❌   |
-| forceGc                   | ✅       | ❌   |
-| suspendCore               | ✅       | ❌   |
-| queryTunnelState          | ✅       | ✅   |
-| queryTrafficNow           | ✅       | ✅   |
-| queryTrafficTotal         | ✅       | ✅   |
-| notifyDnsChanged          | ✅       | ❌   |
-| notifyTimeZoneChanged     | ✅       | ❌   |
-| notifyInstalledAppChanged | ❌       | ❌   |
-| startTun(startClash)      | ✅       |     |
-| stopTun(stopClash)        | ✅       |     |
-| startHttp(startClash)     | ✅       |     |
-| stopHttp(stopClash)       | ✅       |     |
-| queryGroupNames           | ✅       | ✅   |
-| queryGroup                | ✅       | ✅   |
-| healthCheck               | ✅       | ❌   |
-| healthCheckAll            | ✅       | ❌   |
-| patchSelector             | ✅       | ✅   |
-| fetchAndValid             | ✅       | ✅   |
-| load                      | ✅       | ✅   |
-| queryProviders            | ✅       |     |
-| updateProvider            | ✅       |     |
-| queryOverride             | ❌       |     |
-| writeOverride             | ❌       |     |
-| clearOverride             | ❌       |     |
-| installSideloadGeoip      | ✅       |     |
-| queryConfiguration        | ❌       |     |
-| subscribeLogcat           | ✅       |     |
-| unsubscribeLogcat         | ✅       |     |
+## Listenables
+profileFile  
+profileDownloading  
+countryDBFile  
+countryDBDownloading  
+profile  
+profileResolving  
+healthChecking  
+state.isRunning  
+## Methods
+queryTrafficNow  
+queryTrafficTotal  
+applyConfig  
+isClashRunning  
+startClash  
+stopClash  

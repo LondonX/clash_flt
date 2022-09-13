@@ -3,8 +3,6 @@ package com.LondonX.clash_flt
 import android.app.Activity
 import android.content.Intent
 import android.net.VpnService
-import android.os.Handler
-import android.os.Looper
 import androidx.annotation.NonNull
 import androidx.core.content.edit
 import com.LondonX.clash_flt.service.ClashVpnService
@@ -24,9 +22,7 @@ private const val ACTION_PREPARE_VPN = 0xF1
 class ClashFltPlugin : FlutterPlugin, MethodCallHandler, ActivityAware,
     PluginRegistry.ActivityResultListener {
     private lateinit var channel: MethodChannel
-    private val uiHandler = Handler(Looper.getMainLooper())
     private val scope = MainScope()
-    private val logSubs = hashMapOf<String, Job>()
 
     override fun onAttachedToEngine(@NonNull flutterPluginBinding: FlutterPlugin.FlutterPluginBinding) {
         channel = MethodChannel(flutterPluginBinding.binaryMessenger, "clash_flt")
@@ -34,7 +30,6 @@ class ClashFltPlugin : FlutterPlugin, MethodCallHandler, ActivityAware,
     }
 
     override fun onMethodCall(@NonNull call: MethodCall, @NonNull result: Result) {
-        val callbackKey = call.argument<String>("callbackKey")
         when (call.method) {
             "queryTrafficNow" -> {
                 nullableClashServiceScope(result) {
@@ -107,16 +102,6 @@ class ClashFltPlugin : FlutterPlugin, MethodCallHandler, ActivityAware,
         channel.setMethodCallHandler(null)
     }
 
-    private fun callbackWithKey(callbackKey: String?, params: Map<String, Any?>) {
-        channel.invokeMethod(
-            "callbackWithKey",
-            mapOf(
-                "callbackKey" to callbackKey,
-                "params" to params,
-            ),
-        )
-    }
-
     private var activity: Activity? = null
     override fun onAttachedToActivity(binding: ActivityPluginBinding) {
         activity = binding.activity
@@ -184,16 +169,5 @@ class ClashFltPlugin : FlutterPlugin, MethodCallHandler, ActivityAware,
             val service = ClashVpnService.getInstance(activity)
             withService.invoke(this, service)
         }
-    }
-}
-
-private fun CompletableDeferred<*>.result(result: Result, errorCode: String) {
-    this.invokeOnCompletion {
-        if (it == null) {
-            result.success(null)
-            return@invokeOnCompletion
-        }
-        result.error(errorCode, it.message, null)
-        it.printStackTrace()
     }
 }
