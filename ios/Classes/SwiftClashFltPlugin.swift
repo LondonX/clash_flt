@@ -5,6 +5,11 @@ public class SwiftClashFltPlugin: NSObject, FlutterPlugin {
     private let channel: FlutterMethodChannel
     private let vpnManager = VPNManager.shared
     
+    let suiteName: String = {
+        let identifier = Bundle.main.infoDictionary?["CFBundleIdentifier"] as! String
+        return "group.\(identifier)"
+    }()
+    
     init(channel: FlutterMethodChannel) {
         self.channel = channel
     }
@@ -49,20 +54,18 @@ public class SwiftClashFltPlugin: NSObject, FlutterPlugin {
                 break
             }
             
-            let suiteName: String = {
-                let identifier = Bundle.main.infoDictionary?["CFBundleIdentifier"] as! String
-                return "group.\(identifier)"
-            }()
             let userDefaults = UserDefaults(suiteName: suiteName)!
             let clashHome = argsMap!["clashHome"] as! String
             let profilePath = argsMap!["profilePath"] as! String
             let countryDBPath = argsMap!["countryDBPath"] as! String
             let groupName = argsMap!["groupName"] as! String
             let proxyName = argsMap!["proxyName"] as! String
-            userDefaults.set(clashHome, forKey: "clash_flt_clashHome")
-            userDefaults.set(profilePath, forKey: "clash_flt_profilePath")
-            // /var/mobile/Containers/Data/Application/D308986C-7D80-4691-83B0-C73230D371B4/Library/Application Support/clash/Country.mmdb
-            userDefaults.set(countryDBPath, forKey: "clash_flt_countryDBPath")
+            let sharedClashHome = noneSandboxUrl(clashHome, isDir: true)
+            let sharedProfilePath = noneSandboxUrl(profilePath, isDir: false)
+            let sharedCountryDBPath = noneSandboxUrl(countryDBPath, isDir: false)
+            userDefaults.set(sharedClashHome.absoluteString, forKey: "clash_flt_clashHome")
+            userDefaults.set(sharedProfilePath, forKey: "clash_flt_profilePath")
+            userDefaults.set(sharedCountryDBPath, forKey: "clash_flt_countryDBPath")
             userDefaults.set(groupName, forKey: "clash_flt_groupName")
             userDefaults.set(proxyName, forKey: "clash_flt_proxyName")
             result(true)
@@ -77,6 +80,7 @@ public class SwiftClashFltPlugin: NSObject, FlutterPlugin {
         case "startClash":
             Task.init {
                 do {
+                    await vpnManager.loadController()
                     try await vpnManager.installVPNConfiguration()
                     if(vpnManager.controller == nil) {
                         result(false)
@@ -112,5 +116,40 @@ public class SwiftClashFltPlugin: NSObject, FlutterPlugin {
     
     private func isClashRunning() -> Bool {
         return vpnManager.controller?.connectionStatus == .connected
+    }
+    
+    private func noneSandboxUrl(_ sandboxPath: String, isDir: Bool) -> URL {
+        let separator = "/Library/Application Support/"
+        let replace = (sandboxPath.components(separatedBy: separator).first!) + separator
+        let components = sandboxPath.replacingOccurrences(of: replace, with: "")
+        
+        let sandboxUrl = URL(fileURLWithPath: sandboxPath)
+        let data = try? Data(contentsOf: sandboxUrl)
+        let container = FileManager.default.containerURL(forSecurityApplicationGroupIdentifier: suiteName)
+        let sharedUrl = container!.appendingPathComponent(components)
+        try? FileManager.default.removeItem(at: sharedUrl)
+        var created = false
+        if (isDir) {
+            do {
+                try FileManager.default.createDirectory(atPath: sharedUrl.path, withIntermediateDirectories: true)
+                created = true
+            } catch {
+                created = false
+            }
+            
+        } else {
+            var dir = URL(fileURLWithPath: sharedUrl.path)
+            dir.deleteLastPathComponent()
+            do {
+                try FileManager.default.createDirectory(atPath: dir.path, withIntermediateDirectories: true)
+                created = FileManager.default.createFile(atPath: sharedUrl.path, contents: data)
+            } catch {
+                created = false
+            }
+        }
+        if(!created) {
+            print("create \(isDir ? "dir" : "file") sharedUrl(\(sharedUrl)) failed!!!")
+        }
+        return sharedUrl
     }
 }

@@ -201,6 +201,8 @@
 			dependencies = (
 			);
 			name = PacketTunnel;
+			packageProductDependencies = (
+			);
 			productName = PacketTunnel;
 			productReference = 858A7C3A28D03DCB00B0ADA6 /* PacketTunnel.appex */;
 			productType = "com.apple.product-type.app-extension";
@@ -256,6 +258,8 @@
 				Base,
 			);
 			mainGroup = 97C146E51CF9000F007C117D;
+			packageReferences = (
+			);
 			productRefGroup = 97C146EF1CF9000F007C117D /* Products */;
 			projectDirPath = "";
 			projectRoot = "";
