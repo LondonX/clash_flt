@@ -28,7 +28,7 @@ class PacketTunnelProvider: NEPacketTunnelProvider {
         }
         let generalJson = String(data: ClashKit.ClashGetConfigGeneral()!, encoding: .utf8)
         let general = jsonToDictionary(generalJson)
-        NSLog("[ClashFlt.PacketTunnel]startTunnel with config: \(String(describing: (generalJson)))")
+        osLog("startTunnel with config: \(String(describing: (generalJson)))")
         let port = general?["port"] as? Int ?? 7890
         //192.168.0.29
         let host = "127.0.0.1"
@@ -67,7 +67,7 @@ class PacketTunnelProvider: NEPacketTunnelProvider {
         let countryDBUrl = resolvePath(countryDBPath, isDir: false)
         let groupName = userDefaults.string(forKey: "clash_flt_groupName")
         let proxyName = userDefaults.string(forKey: "clash_flt_proxyName")
-        NSLog("[ClashFlt.PacketTunnel]setup with clashHome: \(clashHomeUrl?.path ?? ""), profilePath: \(profileUrl?.path ?? ""), countryDBPath: \(countryDBUrl?.path ?? ""), groupName: \(groupName ?? ""), proxyName: \(proxyName ?? "")")
+        osLog("setup with clashHome: \(clashHomeUrl?.path ?? ""), profilePath: \(profileUrl?.path ?? ""), countryDBPath: \(countryDBUrl?.path ?? ""), groupName: \(groupName ?? ""), proxyName: \(proxyName ?? "")")
         
         if(clashHomeUrl == nil ||
            profileUrl == nil ||
@@ -75,16 +75,16 @@ class PacketTunnelProvider: NEPacketTunnelProvider {
            groupName == nil ||
            proxyName == nil
         ) {
-            NSLog("[ClashFlt.PacketTunnel]\(String(describing: clashHomeUrl)), \(String(describing: profileUrl)), \(String(describing: countryDBUrl)), \(String(describing: groupName)), \(String(describing: proxyName))")
+            osLog("\(String(describing: clashHomeUrl)), \(String(describing: profileUrl)), \(String(describing: countryDBUrl)), \(String(describing: groupName)), \(String(describing: proxyName))")
             return false
         }
         let cacheDBUrl = clashHomeUrl!.appendingPathComponent("cache.db")
         FileManager.default.createFile(atPath: cacheDBUrl.path, contents: nil)
         let fileExists = FileManager.default.fileExists(atPath: profileUrl!.path)
-        NSLog("[ClashFlt.PacketTunnel]profileUrl: \(profileUrl!), fileExists: \(fileExists)")
+        osLog("profileUrl: \(profileUrl!), fileExists: \(fileExists)")
         
         let config = try? String(contentsOfFile: profilePath!)
-        NSLog("[ClashFlt.PacketTunnel]config: \(config ?? "")")
+        osLog("config: \(config ?? "")")
         if(config == nil) {
             return false
         }
@@ -140,7 +140,7 @@ class AppClashClient: NSObject, ClashClientProtocol {
     }
     
     func log(_ level: String?, message: String?) {
-        NSLog("[ClashFlt.PacketTunnel]AppClashClient[\(level ?? "")]: \(message ?? "")")
+        osLog("AppClashClient[\(level ?? "")]: \(message ?? "")")
     }
     
     func traffic(_ up: Int64, down: Int64) {
@@ -157,7 +157,7 @@ private func jsonToDictionary(_ text: String?) -> [String: Any]? {
         do {
             return try JSONSerialization.jsonObject(with: data, options: []) as? [String: Any]
         } catch {
-            NSLog("[ClashFlt.PacketTunnel]\(error.localizedDescription)")
+            osLog("\(error.localizedDescription)")
         }
     }
     return nil
@@ -188,4 +188,8 @@ private func resolvePath(_ nonSandboxPath: String?, isDir: Bool) -> URL? {
     }
     //"/private/var/mobile/Containers/Shared/AppGroup/604455A2-AD91-4DD7-AC82-F7DCE3BE448E/clash/profile/1ab43c05"
     return URL(string: nonSandboxPath!)
+}
+
+func osLog(_ any: Any?) {
+    NSLog("[ClashFlt.PacketTunnel]\(any ?? "")")
 }
