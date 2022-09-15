@@ -16,6 +16,7 @@ dependencies:
   yaml:
   flutter_emoji:
   dart_ping:
+  dart_ping_ios:
 
 dev_dependencies:
   flutter_test:

@@ -37,6 +37,7 @@ class ClashFlt {
   Future<void> init(Directory homeDir) async {
     this.homeDir = homeDir;
     await _channel.syncState();
+    HealthChecker.init();
   }
 
   ClashFlt._();
