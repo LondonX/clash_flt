@@ -30,7 +30,6 @@ class PacketTunnelProvider: NEPacketTunnelProvider {
         let general = jsonToDictionary(generalJson)
         osLog("startTunnel with config: \(String(describing: (generalJson)))")
         let port = general?["port"] as? Int ?? 7890
-        //192.168.0.29
         let host = "127.0.0.1"
         try await self.setTunnelNetworkSettings(initTunnelSettings(proxyHost: host, proxyPort: port))
     }
@@ -88,7 +87,11 @@ class PacketTunnelProvider: NEPacketTunnelProvider {
         if(config == nil) {
             return false
         }
-        ClashKit.ClashSetup(clashHomeUrl!.path, config, client)
+        let configOverride = """
+        \(config!)
+        allow-lan: false
+        """
+        ClashKit.ClashSetup(clashHomeUrl!.path, configOverride, client)
         let data = ClashKit.ClashGetConfigGeneral()
         let map = [groupName! : proxyName!]
         let json = dictionaryToJson(dic: map)
