@@ -21,13 +21,14 @@ dependencies:
 * Open Runner's `Signing & Capabilities` tab.
 * You may need to enable `Network Extension` in [Apple Developer Account page](https://developer.apple.com/account/)/Certificates, IDs & Profiles/Identifiers/YOUR_BUNDLE_ID/Edit/Network Extensions checkbox, before add `Network Extension` and provision.
 * Add `Network Extension` and `Personal VPN`.
-* Check `App Proxy` and `Packet Tunnel` of `Network Extension`。
+* Check `App Proxy` and `Packet Tunnel` of `Network Extension`.
 
 4. Add project Target of `Network-Extension`
-* Create a Target named `PacketTunnel`.
+* Create a Target named `PacketTunnel`, the XCode will auto create a file named `PacketTunnelProvider.swift`.
 * Open `PacketTunnel`'s `Signing & Capabilities` tab.
 * Add `Network Extension` and `Personal VPN`, just as step 3.
 * Add `ClashKit.xcframework` into `PacketTunnel`'s `Frameworks and Libraries` an select `Embed Without Signing`.
+* Modify `PacketTunnelProvider.swift` by paste from [Example's PacketTunnelProvider.swfit](example/ios/PacketTunnel/PacketTunnelProvider.swift)
 
 5. Add app group
 * Create a App Group named `group.<yourBundleId>` both in `Runner` and `PacketTunnel` Target.
