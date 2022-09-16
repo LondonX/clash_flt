@@ -28,8 +28,15 @@ class ClashFlt {
   final profileResolving = ValueNotifier<bool>(false);
   final healthChecking = ValueNotifier<bool>(false);
 
-  final _selectedProxyGroupName = ValueNotifier<String?>(null);
-  final _selectedProxyName = ValueNotifier<String?>(null);
+  ///
+  /// DO NOT set value, call `selectProxy` instead
+  ///
+  final selectedProxyGroupName = ValueNotifier<String?>(null);
+
+  ///
+  /// DO NOT set value, call `selectProxy` instead
+  ///
+  final selectedProxyName = ValueNotifier<String?>(null);
 
   final _channel = ClashChannel.instance;
   ClashState get state => _channel.state;
@@ -70,13 +77,13 @@ class ClashFlt {
     profileResolving.value = false;
     if (profile.value == null) return false;
     //update defaultSelection
-    final currentProxyName = _selectedProxyName.value;
+    final currentProxyName = selectedProxyName.value;
     final proxies = profile.value?.proxies ?? [];
     final hasProxy = proxies.any((element) => element.name == currentProxyName);
     if (!hasProxy) {
       final defaultGroup = _findUrlTestGroup();
-      _selectedProxyGroupName.value = defaultGroup?.name;
-      _selectedProxyName.value = defaultGroup?.name;
+      selectedProxyGroupName.value = defaultGroup?.name;
+      selectedProxyName.value = defaultGroup?.name;
       _applyConfig();
     }
     return profile.value != null;
@@ -119,6 +126,13 @@ class ClashFlt {
     return false;
   }
 
+  Proxy? findProxyOrNull(String name) {
+    try {
+      return findProxy(name);
+    } catch (_) {}
+    return null;
+  }
+
   Proxy findProxy(String name) {
     final proxyGroups = profile.value?.proxyGroups ?? [];
     try {
@@ -151,11 +165,11 @@ class ClashFlt {
     if (proxy.type.toLowerCase() == "url-test") {
       final urlTestGroup = _findUrlTestGroup();
       if (urlTestGroup == null) return;
-      _selectedProxyGroupName.value = urlTestGroup.name;
+      selectedProxyGroupName.value = urlTestGroup.name;
     } else {
-      _selectedProxyGroupName.value = group.name;
+      selectedProxyGroupName.value = group.name;
     }
-    _selectedProxyName.value = proxy.name;
+    selectedProxyName.value = proxy.name;
     _applyConfig();
   }
 
@@ -167,11 +181,11 @@ class ClashFlt {
   }
 
   bool isProxySelected(ProxyGroup group, Proxy proxy) {
-    if (_selectedProxyName.value != proxy.name) return false;
+    if (selectedProxyName.value != proxy.name) return false;
     if (proxy.type.toLowerCase() == "url-test") {
-      return _selectedProxyGroupName.value == proxy.name;
+      return selectedProxyGroupName.value == proxy.name;
     }
-    return _selectedProxyGroupName.value == group.name;
+    return selectedProxyGroupName.value == group.name;
   }
 
   Future<bool> startClash() async {
@@ -188,8 +202,8 @@ class ClashFlt {
     final clashHome = homeDir.path;
     final profilePath = profile.value?.filePath;
     final countryDBPath = countryDBFile.value?.path;
-    final groupName = _selectedProxyGroupName.value;
-    final proxyName = _selectedProxyName.value;
+    final groupName = selectedProxyGroupName.value;
+    final proxyName = selectedProxyName.value;
     if (profilePath == null) {
       _debugPrint("[ClashFlt]applyConfig failed!!! profilePath is null.");
       return false;
