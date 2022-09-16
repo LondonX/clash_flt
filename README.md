@@ -7,6 +7,8 @@ A new Flutter plugin based on [ClashKit](https://github.com/LondonX/clash-kit) a
 ```yaml
 dependencies:
   clash_flt:
+    git:
+      url: https://github.com/LondonX/clash_flt.git
 ```
 ### Android
 1. Requires minSdkVersion 21
