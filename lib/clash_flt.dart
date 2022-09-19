@@ -11,6 +11,7 @@ import 'package:flutter/services.dart';
 import 'clash_state.dart';
 import 'entity/profile.dart';
 import 'entity/proxy.dart';
+import 'entity/traffic.dart';
 
 export 'entity/profile.dart';
 
@@ -196,6 +197,14 @@ class ClashFlt {
 
   Future<void> stopClash() async {
     await _channel.stopClash();
+  }
+
+  Future<Traffic> queryTrafficNow() {
+    return _channel.queryTrafficNow();
+  }
+
+  Future<Traffic> queryTrafficTotal() {
+    return _channel.queryTrafficTotal();
   }
 
   Future<bool> _applyConfig() async {
