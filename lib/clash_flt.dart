@@ -152,6 +152,7 @@ class ClashFlt {
   }
 
   Future<bool> healthCheckAll() async {
+    if (healthChecking.value) return false;
     final proxies = profile.value?.proxies;
     if (proxies == null) return false;
     if (proxies.isEmpty) return true;
