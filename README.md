@@ -12,7 +12,8 @@ dependencies:
 ```
 ### Android
 1. Requires minSdkVersion 21
-2. Add `implementation files("ClashKit.aar")` in `<project-root>/android/app/build.gradle`'s dependencies section.
+2. Copy `ClashKit.aar` into `<project-root>/android/app/`.
+3. Add `implementation files("ClashKit.aar")` in `<project-root>/android/app/build.gradle`'s dependencies section.
 ### iOS
 1. Requires iOS 13 or newer.
 2. As `gomobile` stop supporting armv7a, you need to exlude this architecture in XCode.
