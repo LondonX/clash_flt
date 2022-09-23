@@ -30,7 +30,7 @@ dependencies:
 * Create a Target named `PacketTunnel`, the XCode will auto create a file named `PacketTunnelProvider.swift`.
 * Open `PacketTunnel`'s `Signing & Capabilities` tab.
 * Add `Network Extension` and `Personal VPN`, just as step 3.
-* Add `ClashKit.xcframework` into `PacketTunnel`'s `Frameworks and Libraries` an select `Embed Without Signing`.
+* Add `ClashKit.xcframework` into `PacketTunnel`'s `Frameworks and Libraries` an select `Do Not Embed`.
 * Modify `PacketTunnelProvider.swift` by paste from [Example's PacketTunnelProvider.swfit](example/ios/PacketTunnel/PacketTunnelProvider.swift)
 
 5. Add app group
