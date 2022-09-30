@@ -68,7 +68,7 @@ public final class VPNManager: ObservableObject {
         let config = NETunnelProviderProtocol()
         config.providerBundleIdentifier = self.providerBundleIdentifier
         config.serverAddress = "Clash"
-        config.disconnectOnSleep = true
+        config.disconnectOnSleep = false
         if #available(iOS 14.2, *) {
             config.excludeLocalNetworks = true
         }
