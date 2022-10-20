@@ -54,6 +54,10 @@ Future<Duration?> _healthCheck(Proxy proxy) async {
   try {
     final pingData =
         await Ping(proxy.server, count: 1, timeout: 3).stream.first;
+    if (pingData.error != null) {
+      proxy.delay = Duration(milliseconds: 9999);
+      return null;
+    }
     proxy.delay = pingData.response?.time;
     return proxy.delay;
   } catch (e) {
