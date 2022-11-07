@@ -4,7 +4,6 @@ import android.app.Activity
 import android.content.Intent
 import android.net.VpnService
 import androidx.annotation.NonNull
-import androidx.core.content.edit
 import com.LondonX.clash_flt.service.ClashVpnService
 import io.flutter.embedding.engine.plugins.FlutterPlugin
 import io.flutter.embedding.engine.plugins.activity.ActivityAware
@@ -57,13 +56,15 @@ class ClashFltPlugin : FlutterPlugin, MethodCallHandler, ActivityAware,
                 val countryDBPath = call.argument<String>("countryDBPath")
                 val groupName = call.argument<String>("groupName")
                 val proxyName = call.argument<String>("proxyName")
-                activity?.getSharedPreferences("clash_fit.xml", Activity.MODE_PRIVATE)?.edit {
-                    putString("clashHome", clashHome)
-                    putString("profilePath", profilePath)
-                    putString("countryDBPath", countryDBPath)
-                    putString("groupName", groupName)
-                    putString("proxyName", proxyName)
-                }
+                activity?.getSharedPreferences("clash_fit.xml", Activity.MODE_PRIVATE)?.edit()
+                    ?.apply {
+                        putString("clashHome", clashHome)
+                        putString("profilePath", profilePath)
+                        putString("countryDBPath", countryDBPath)
+                        putString("groupName", groupName)
+                        putString("proxyName", proxyName)
+                        apply()
+                    }
                 result.success(true)
                 nullableClashServiceScope(result) {
                     if (it?.isRunning == true) {
