@@ -85,8 +85,8 @@ class ClashFlt {
       final defaultGroup = _findUrlTestGroup();
       selectedProxyGroupName.value = defaultGroup?.name;
       selectedProxyName.value = defaultGroup?.name;
-      _applyConfig();
     }
+    _applyConfig();
     return profile.value != null;
   }
 
