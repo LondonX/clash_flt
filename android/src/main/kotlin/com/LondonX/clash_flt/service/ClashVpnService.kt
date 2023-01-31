@@ -104,7 +104,6 @@ class ClashVpnService : VpnService() {
     private fun setupVpn(): ParcelFileDescriptor {
         val builder = Builder()
             .addAddress(TUN_GATEWAY, TUN_SUBNET_PREFIX)
-            .setBlocking(false)
             .setMtu(TUN_MTU)
             .setSession("Clash")
             .setConfigureIntent(
@@ -115,14 +114,15 @@ class ClashVpnService : VpnService() {
                     pendingIntentFlags(PendingIntent.FLAG_UPDATE_CURRENT)
                 )
             )
-            .allowBypass()
             .apply {
                 // Metered
+                if (Build.VERSION.SDK_INT >= 21) {
+                    allowBypass()
+                    setBlocking(false)
+                }
                 if (Build.VERSION.SDK_INT >= 29) {
                     setMetered(false)
-                }
-                // System Proxy
-                if (Build.VERSION.SDK_INT >= 29) {
+                    // System Proxy
                     val general = JSONObject(String(Clash.getConfigGeneral()))
                     val port = general.getInt("port")
                     setHttpProxy(
