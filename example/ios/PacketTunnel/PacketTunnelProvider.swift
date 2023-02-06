@@ -4,7 +4,6 @@
 //
 //  Created by LondonX on 2022/9/13.
 //
-
 import NetworkExtension
 import ClashKit
 
@@ -13,6 +12,9 @@ class PacketTunnelProvider: NEPacketTunnelProvider {
     private var trafficTotalDown: Int64 = 0
     private var trafficUp: Int64 = 0
     private var trafficDown: Int64 = 0
+    private var appliedCfg: String? = nil
+    
+    private var userDefaults: UserDefaults? = nil
     
     private lazy var client = AppClashClient { trafficUp, trafficDown in
         self.trafficTotalUp += trafficUp
@@ -22,6 +24,17 @@ class PacketTunnelProvider: NEPacketTunnelProvider {
     }
     
     override func startTunnel(options: [String : NSObject]?) async throws {
+        let exIdentifier = Bundle.main.infoDictionary?["CFBundleIdentifier"] as! String
+        let identifier = exIdentifier.replacingOccurrences(of: ".PacketTunnel", with: "")
+        let suiteName = "group.\(identifier)"
+        self.userDefaults = UserDefaults(suiteName: suiteName)!
+        
+        let allowStartFromIOSSettings = userDefaults!.bool(forKey: "clash_flt_allowStartFromIOSSettings")
+        
+        let startFromIOSSettings = (options?["startFromApp"] as? Bool) != true
+        if(startFromIOSSettings && !allowStartFromIOSSettings){
+            throw MyError.runtimeError("Preventing tunnel start, allowStartFromIOSSettings is false")
+        }
         let isSetup = setupClash()
         if (!isSetup) {
             throw MyError.runtimeError("Clash Setup failed")
@@ -54,10 +67,7 @@ class PacketTunnelProvider: NEPacketTunnelProvider {
     }
     
     private func setupClash() -> Bool {
-        let exIdentifier = Bundle.main.infoDictionary?["CFBundleIdentifier"] as! String
-        let identifier = exIdentifier.replacingOccurrences(of: ".PacketTunnel", with: "")
-        let suiteName = "group.\(identifier)"
-        let userDefaults = UserDefaults(suiteName: suiteName)!
+        let userDefaults = self.userDefaults!
         let clashHome = userDefaults.string(forKey: "clash_flt_clashHome")
         let clashHomeUrl = resolvePath(clashHome, isDir: true)
         let profilePath = userDefaults.string(forKey: "clash_flt_profilePath")
@@ -91,12 +101,17 @@ class PacketTunnelProvider: NEPacketTunnelProvider {
         \(config!)
         allow-lan: false
         """
-        ClashKit.ClashSetup(clashHomeUrl!.path, configOverride, client)
-        let data = ClashKit.ClashGetConfigGeneral()
+        if (appliedCfg != configOverride) {
+            osLog("config changed, calling ClashKit.ClashSetup.")
+            ClashKit.ClashSetup(clashHomeUrl!.path, configOverride, client)
+            appliedCfg = configOverride
+        } else {
+            osLog("config no changes, skip ClashKit.ClashSetup.")
+        }
         let map = [groupName! : proxyName!]
         let json = dictionaryToJson(dic: map)
         ClashKit.ClashPatchSelector(json?.data(using: .utf8))
-        return data != nil
+        return true
     }
     
     private func initTunnelSettings(proxyHost: String, proxyPort: Int) -> NEPacketTunnelNetworkSettings {
