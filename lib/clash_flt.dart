@@ -39,6 +39,13 @@ class ClashFlt {
   ///
   final selectedProxyName = ValueNotifier<String?>(null);
 
+  ///
+  /// [allowStartFromIOSSettings] Allow VPN start from ios System Settings.
+  /// Only works on iOS, Android doesn't support start custom VPN from system preference.
+  /// Default is true
+  ///
+  bool allowStartFromIOSSettings = true;
+
   final _channel = ClashChannel.instance;
   ClashState get state => _channel.state;
 
@@ -236,6 +243,7 @@ class ClashFlt {
       "countryDBPath": countryDBPath,
       "groupName": groupName,
       "proxyName": proxyName,
+      "allowStartFromIOSSettings": allowStartFromIOSSettings,
     };
     final cfgJson = json.encode(map);
     _debugPrint("[ClashFlt]applyConfig: $cfgJson");

@@ -31,10 +31,11 @@ public final class VPNController: ObservableObject {
     }
     
     private func handleVPNStatusDidChangeNotification(_ notification: Notification) {
-        guard let connection = notification.object as? NEVPNConnection, connection === self.providerManager.connection else {
+        let connection = notification.object as? NEVPNConnection
+        if (connection == nil) {
             return
         }
-        self.connectionStatus = connection.status
+        self.connectionStatus = connection!.status
     }
     
     public func isEqually(manager: NETunnelProviderManager) -> Bool {
@@ -55,7 +56,8 @@ public final class VPNController: ObservableObject {
             try await self.providerManager.saveToPreferences()
         }
         do {
-            try self.providerManager.connection.startVPNTunnel()
+            let opstions = ["startFromApp" : true as NSObject]
+            try self.providerManager.connection.startVPNTunnel(options: opstions)
         } catch {
             print("error: \(error)")
         }

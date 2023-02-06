@@ -15,7 +15,7 @@ public final class VPNManager: ObservableObject {
     
     private init() {
         NotificationCenter.default
-            .publisher(for: Notification.Name.NEVPNConfigurationChange, object: nil)
+            .publisher(for: .NEVPNConfigurationChange, object: nil)
             .receive(on: DispatchQueue.main)
             .sink { [unowned self] in self.handleVPNConfigurationChangedNotification($0) }
             .store(in: &self.cancellables)
@@ -27,9 +27,19 @@ public final class VPNManager: ObservableObject {
         }
     }
     
+    private func handleVPNStateChangeNotification(_ notification: Notification) {
+        let connection = notification.object as? NEVPNConnection
+        if (connection == nil) {
+            return
+        }
+        if (connection?.status == .disconnected) {
+            self.controller = nil
+        }
+    }
+    
     func loadController() async {
         if let manager = try? await self.loadCurrentTunnelProviderManager() {
-            if let controller = self.controller, controller.isEqually(manager: manager) {
+            if self.controller?.isEqually(manager: manager) ?? false {
                 // Nothing
             } else {
                 await MainActor.run {

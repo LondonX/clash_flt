@@ -60,6 +60,7 @@ public class SwiftClashFltPlugin: NSObject, FlutterPlugin {
             let countryDBPath = argsMap!["countryDBPath"] as! String
             let groupName = argsMap!["groupName"] as! String
             let proxyName = argsMap!["proxyName"] as! String
+            let allowStartFromIOSSettings = argsMap!["allowStartFromIOSSettings"] as! Bool
             let sharedClashHome = noneSandboxUrl(clashHome, isDir: true)
             let sharedProfilePath = noneSandboxUrl(profilePath, isDir: false)
             let sharedCountryDBPath = noneSandboxUrl(countryDBPath, isDir: false)
@@ -68,6 +69,7 @@ public class SwiftClashFltPlugin: NSObject, FlutterPlugin {
             userDefaults.set(sharedCountryDBPath, forKey: "clash_flt_countryDBPath")
             userDefaults.set(groupName, forKey: "clash_flt_groupName")
             userDefaults.set(proxyName, forKey: "clash_flt_proxyName")
+            userDefaults.set(allowStartFromIOSSettings, forKey: "clash_flt_allowStartFromIOSSettings")
             result(true)
             if (!isClashRunning()) {
                 return
@@ -75,7 +77,10 @@ public class SwiftClashFltPlugin: NSObject, FlutterPlugin {
             vpnManager.controller?.notifyConfigChanged()
             break
         case "isClashRunning":
-            result(isClashRunning())
+            Task.init {
+                await vpnManager.loadController()
+                result(isClashRunning())
+            }
             break
         case "startClash":
             Task.init {
