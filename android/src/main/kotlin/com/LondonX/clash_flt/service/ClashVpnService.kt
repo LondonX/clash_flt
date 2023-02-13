@@ -12,8 +12,8 @@ import android.os.ParcelFileDescriptor
 import android.util.Log
 import clash.Clash
 import clash.Client
-import kotlinx.coroutines.CancellableContinuation
-import kotlinx.coroutines.suspendCancellableCoroutine
+import com.londonx.tun2socks.Tun2Socks
+import kotlinx.coroutines.*
 import org.json.JSONObject
 import java.io.File
 import kotlin.coroutines.resume
@@ -60,6 +60,7 @@ class ClashVpnService : VpnService() {
         }
     }
     private var vpnFd: ParcelFileDescriptor? = null
+    private var tunning: Job? = null
 
     override fun onCreate() {
         super.onCreate()
@@ -68,6 +69,7 @@ class ClashVpnService : VpnService() {
             if (it.isActive) it.resume(this)
         }
         continuations.clear()
+        Tun2Socks.initialize(this)
     }
 
     fun notifyConfigChanged(): Boolean {
@@ -92,19 +94,50 @@ class ClashVpnService : VpnService() {
     fun startClash() {
         if (isRunning) return
         if (!notifyConfigChanged()) return
-        vpnFd = setupVpn()
+        val setup = setupVpn()
+        vpnFd = setup.fd
+        tunning = MainScope().launch {
+            withContext(Dispatchers.IO) {
+                protect(setup.fd.fd)
+                Tun2Socks.startTun2Socks(
+                    Tun2Socks.LogLevel.INFO,
+                    setup.fd,
+                    TUN_MTU,
+                    "127.0.0.1",
+                    setup.socksPort,
+                    TUN_GATEWAY,
+                    null,
+                    "255.255.255.255",
+                    false,
+                    emptyList(),
+                )
+            }
+        }
         isRunning = true
     }
 
     fun stopClash() {
+        try {
+            Tun2Socks.stopTun2Socks()
+        } catch (_: IllegalStateException) {
+        }
+        tunning?.cancel()
         vpnFd?.close()
         isRunning = false
     }
 
-    private fun setupVpn(): ParcelFileDescriptor {
+    private fun setupVpn(): VpnSetup {
+        val general = JSONObject(String(Clash.getConfigGeneral()))
+        val port = general.getInt("port")
+        val socksPort = general.getInt("socks-port")
         val builder = Builder()
             .addAddress(TUN_GATEWAY, TUN_SUBNET_PREFIX)
             .setMtu(TUN_MTU)
+            .addRoute(NET_ANY, 0)
+            //TODO prevent loops
+            .addDisallowedApplication(packageName)
+            .allowBypass()
+            .setBlocking(true)
             .setSession("Clash")
             .setConfigureIntent(
                 PendingIntent.getActivity(
@@ -115,16 +148,9 @@ class ClashVpnService : VpnService() {
                 )
             )
             .apply {
-                // Metered
-                if (Build.VERSION.SDK_INT >= 21) {
-                    allowBypass()
-                    setBlocking(false)
-                }
                 if (Build.VERSION.SDK_INT >= 29) {
                     setMetered(false)
                     // System Proxy
-                    val general = JSONObject(String(Clash.getConfigGeneral()))
-                    val port = general.getInt("port")
                     setHttpProxy(
                         ProxyInfo.buildDirectProxy(
                             "127.0.0.1",
@@ -135,16 +161,17 @@ class ClashVpnService : VpnService() {
                 }
             }
         val fd = builder.establish()
-        Log.i(TAG, "setupVpn: end, fd != null: ${fd != null}")
-        return fd!!
+        return VpnSetup(fd!!, port, socksPort)
     }
 }
 
 private const val TAG = "ClashVpnService"
 
-private const val TUN_MTU = 0xFFFF
+private const val TUN_MTU = 9000
 private const val TUN_SUBNET_PREFIX = 30
 private const val TUN_GATEWAY = "172.19.0.1"
+private const val NET_ANY = "0.0.0.0"
+
 
 private val HTTP_PROXY_LOCAL_LIST = listOf(
     "localhost",
@@ -172,3 +199,5 @@ private fun pendingIntentFlags(flags: Int, mutable: Boolean = false): Int {
         flags
     }
 }
+
+data class VpnSetup(val fd: ParcelFileDescriptor, val port: Int, val socksPort: Int)

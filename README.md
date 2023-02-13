@@ -1,6 +1,8 @@
 # clash_flt
 
-A new Flutter plugin based on [ClashKit](https://github.com/LondonX/clash-kit) and my `ClashKit` is forked from [AppleClash/clash-apple](https://github.com/AppleClash/clash-apple).
+A new Flutter plugin based on my [ClashKit](https://github.com/LondonX/clash-kit) and my [Tun2Socks-Android](https://github.com/LondonX/tun2socks-android)  
+My `ClashKit` forked from [AppleClash/clash-apple](https://github.com/AppleClash/clash-apple), my `Tun2Socks-Android` forked from [universal-android-tun2socks](https://github.com/mokhtarabadi/universal-android-tun2socks)
+
 
 # Setup
 ### pubspec.yaml

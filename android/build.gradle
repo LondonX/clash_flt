@@ -41,11 +41,12 @@ android {
     }
 
     defaultConfig {
-        minSdkVersion 16
+        minSdkVersion 21
     }
 }
 
 dependencies {
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
     compileOnly files('src/main/libs/ClashKit.aar')
+    compileOnly files('src/main/libs/tun2socks.aar')
 }
