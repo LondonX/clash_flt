@@ -12,6 +12,7 @@ import android.os.ParcelFileDescriptor
 import android.util.Log
 import clash.Clash
 import clash.Client
+import com.LondonX.clash_flt.BuildConfig
 import com.londonx.tun2socks.Tun2Socks
 import kotlinx.coroutines.*
 import org.json.JSONObject
@@ -100,7 +101,7 @@ class ClashVpnService : VpnService() {
             withContext(Dispatchers.IO) {
                 protect(setup.fd.fd)
                 Tun2Socks.startTun2Socks(
-                    Tun2Socks.LogLevel.INFO,
+                    if (!BuildConfig.DEBUG) Tun2Socks.LogLevel.WARNING else Tun2Socks.LogLevel.INFO,
                     setup.fd,
                     TUN_MTU,
                     "127.0.0.1",
