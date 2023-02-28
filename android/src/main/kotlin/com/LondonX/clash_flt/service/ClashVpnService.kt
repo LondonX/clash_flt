@@ -92,7 +92,7 @@ class ClashVpnService : VpnService() {
     var isRunning = false
         private set
 
-    fun startClash() {
+    suspend fun startClash() {
         if (isRunning) return
         if (!notifyConfigChanged()) return
         val setup = setupVpn()
@@ -114,12 +114,14 @@ class ClashVpnService : VpnService() {
                 )
             }
         }
+        delay(500)
         isRunning = true
     }
 
-    fun stopClash() {
+    suspend fun stopClash() {
         try {
             Tun2Socks.stopTun2Socks()
+            delay(500)
         } catch (_: IllegalStateException) {
         }
         tunning?.cancel()
