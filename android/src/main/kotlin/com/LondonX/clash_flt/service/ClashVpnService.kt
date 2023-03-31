@@ -62,6 +62,7 @@ class ClashVpnService : VpnService() {
     }
     private var vpnFd: ParcelFileDescriptor? = null
     private var tunning: Job? = null
+    private var includeAppPackages: Set<String> = HashSet()
 
     override fun onCreate() {
         super.onCreate()
@@ -80,6 +81,7 @@ class ClashVpnService : VpnService() {
         // val countryDBPath = sp.getString("countryDBPath", null) ?: return false
         val groupName = sp.getString("groupName", null) ?: return false
         val proxyName = sp.getString("proxyName", null) ?: return false
+        includeAppPackages = sp.getStringSet("includeAppPackages", emptySet())!!.toSet()
 
         val config = File(profilePath).readText()
         Clash.setup(clashHome, config, client)
@@ -133,24 +135,25 @@ class ClashVpnService : VpnService() {
         val general = JSONObject(String(Clash.getConfigGeneral()))
         val port = general.getInt("port")
         val socksPort = general.getInt("socks-port")
-        val builder = Builder()
-            .addAddress(TUN_GATEWAY, TUN_SUBNET_PREFIX)
-            .setMtu(TUN_MTU)
+        val builder = Builder().addAddress(TUN_GATEWAY, TUN_SUBNET_PREFIX).setMtu(TUN_MTU)
             .addRoute(NET_ANY, 0)
             //TODO prevent loops
             .addDisallowedApplication(packageName)
+            .apply {
+                includeAppPackages.forEach {
+                    addAllowedApplication(it)
+                }
+            }
             .allowBypass()
             .setBlocking(true)
-            .setSession("Clash")
-            .setConfigureIntent(
+            .setSession("Clash").setConfigureIntent(
                 PendingIntent.getActivity(
                     this,
                     0,
                     Intent().setComponent(ComponentName(packageName, "$packageName.MainActivity")),
                     pendingIntentFlags(PendingIntent.FLAG_UPDATE_CURRENT)
                 )
-            )
-            .apply {
+            ).apply {
                 if (Build.VERSION.SDK_INT >= 29) {
                     setMetered(false)
                     // System Proxy

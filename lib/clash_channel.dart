@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'package:clash_flt/clash_state.dart';
 import 'package:clash_flt/entity/traffic.dart';
 import "package:flutter/services.dart";
@@ -71,5 +72,10 @@ class ClashChannel {
     state.isRunning.value = LazyState.disabling;
     await _channel.invokeMethod("stopClash");
     state.isRunning.value = LazyState.disabled;
+  }
+
+  Future<void> includeAndroidApps(Set<String> packages) async {
+    if (!Platform.isAndroid) return;
+    await _channel.invokeMethod("setIncludeApps", {"packages": packages});
   }
 }

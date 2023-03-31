@@ -207,6 +207,10 @@ class ClashFlt {
     await _channel.stopClash();
   }
 
+  Future<void> includeAndroidApps(Set<String> packages) async {
+    await _channel.includeAndroidApps(packages);
+  }
+
   Future<Traffic> queryTrafficNow() {
     return _channel.queryTrafficNow();
   }

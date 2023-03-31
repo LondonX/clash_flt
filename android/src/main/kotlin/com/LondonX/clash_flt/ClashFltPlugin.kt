@@ -94,6 +94,24 @@ class ClashFltPlugin : FlutterPlugin, MethodCallHandler, ActivityAware,
                     result.success(null)
                 }
             }
+            "setIncludeApps" -> {
+                val packages = call.argument<Set<String>>("packages")
+                if (packages == null) {
+                    result.success(false)
+                    return
+                }
+                activity?.getSharedPreferences("clash_fit.xml", Activity.MODE_PRIVATE)?.edit()
+                    ?.apply {
+                        putStringSet("includeAppPackages", packages)
+                        apply()
+                    }
+                nullableClashServiceScope(result) {
+                    if (it?.isRunning == true) {
+                        it.notifyConfigChanged()
+                    }
+                }
+                result.success(false)
+            }
             else -> result.notImplemented()
         }
     }
