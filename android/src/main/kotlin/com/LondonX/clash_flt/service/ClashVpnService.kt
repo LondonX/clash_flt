@@ -136,17 +136,16 @@ class ClashVpnService : VpnService() {
         val port = general.getInt("port")
         val socksPort = general.getInt("socks-port")
         val builder = Builder().addAddress(TUN_GATEWAY, TUN_SUBNET_PREFIX).setMtu(TUN_MTU)
-            .addRoute(NET_ANY, 0)
-            //TODO prevent loops
-            .addDisallowedApplication(packageName)
-            .apply {
-                includeAppPackages.forEach {
-                    addAllowedApplication(it)
+            .addRoute(NET_ANY, 0).apply {
+                //TODO prevent loops
+                if (includeAppPackages.isEmpty()) {
+                    addDisallowedApplication(packageName)
+                } else {
+                    includeAppPackages.forEach {
+                        addAllowedApplication(it)
+                    }
                 }
-            }
-            .allowBypass()
-            .setBlocking(true)
-            .setSession("Clash").setConfigureIntent(
+            }.allowBypass().setBlocking(true).setSession("Clash").setConfigureIntent(
                 PendingIntent.getActivity(
                     this,
                     0,

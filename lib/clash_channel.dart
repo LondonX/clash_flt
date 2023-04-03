@@ -76,6 +76,7 @@ class ClashChannel {
 
   Future<void> includeAndroidApps(Set<String> packages) async {
     if (!Platform.isAndroid) return;
-    await _channel.invokeMethod("setIncludeApps", {"packages": packages});
+    await _channel
+        .invokeMethod("setIncludeApps", {"packages": packages.toList()});
   }
 }
