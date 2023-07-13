@@ -37,20 +37,17 @@ public final class VPNManager: ObservableObject {
         }
     }
     
-    func loadController() async {
+    func loadController() async -> VPNController? {
         if let manager = try? await self.loadCurrentTunnelProviderManager() {
             if self.controller?.isEqually(manager: manager) ?? false {
                 // Nothing
             } else {
-                await MainActor.run {
-                    self.controller = VPNController(providerManager: manager)
-                }
+                self.controller = VPNController(providerManager: manager)
             }
         } else {
-            await MainActor.run {
-                self.controller = nil
-            }
+            self.controller = nil
         }
+        return self.controller
     }
     
     private func loadCurrentTunnelProviderManager() async throws -> NETunnelProviderManager? {

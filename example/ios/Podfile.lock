@@ -4,14 +4,15 @@ PODS:
   - Flutter (1.0.0)
   - flutter_icmp_ping (0.0.1):
     - Flutter
-  - path_provider_ios (0.0.1):
+  - path_provider_foundation (0.0.1):
     - Flutter
+    - FlutterMacOS
 
 DEPENDENCIES:
   - clash_flt (from `.symlinks/plugins/clash_flt/ios`)
   - Flutter (from `Flutter`)
   - flutter_icmp_ping (from `.symlinks/plugins/flutter_icmp_ping/ios`)
-  - path_provider_ios (from `.symlinks/plugins/path_provider_ios/ios`)
+  - path_provider_foundation (from `.symlinks/plugins/path_provider_foundation/darwin`)
 
 EXTERNAL SOURCES:
   clash_flt:
@@ -20,15 +21,15 @@ EXTERNAL SOURCES:
     :path: Flutter
   flutter_icmp_ping:
     :path: ".symlinks/plugins/flutter_icmp_ping/ios"
-  path_provider_ios:
-    :path: ".symlinks/plugins/path_provider_ios/ios"
+  path_provider_foundation:
+    :path: ".symlinks/plugins/path_provider_foundation/darwin"
 
 SPEC CHECKSUMS:
   clash_flt: cc2b611866cbb29f57efcfad4b7358592b18c70c
   Flutter: f04841e97a9d0b0a8025694d0796dd46242b2854
-  flutter_icmp_ping: 07e508847df7fa9262d050bb0b203de074bbe517
-  path_provider_ios: 14f3d2fd28c4fdb42f44e0f751d12861c43cee02
+  flutter_icmp_ping: 2b159955eee0c487c766ad83fec224ae35e7c935
+  path_provider_foundation: eaf5b3e458fc0e5fbb9940fb09980e853fe058b8
 
 PODFILE CHECKSUM: ef19549a9bc3046e7bb7d2fab4d021637c0c58a3
 
-COCOAPODS: 1.11.3
+COCOAPODS: 1.12.1
