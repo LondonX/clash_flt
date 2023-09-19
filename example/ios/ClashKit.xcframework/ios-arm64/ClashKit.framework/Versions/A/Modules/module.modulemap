@@ -1,8 +1,0 @@
-framework module "ClashKit" {
-	header "ref.h"
-    header "Clash.objc.h"
-    header "Universe.objc.h"
-    header "ClashKit.h"
-
-    export *
-}

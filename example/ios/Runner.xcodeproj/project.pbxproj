@@ -10,7 +10,8 @@
 		1498D2341E8E89220040F4C2 /* GeneratedPluginRegistrant.m in Sources */ = {isa = PBXBuildFile; fileRef = 1498D2331E8E89220040F4C2 /* GeneratedPluginRegistrant.m */; };
 		3B3967161E833CAA004F5970 /* AppFrameworkInfo.plist in Resources */ = {isa = PBXBuildFile; fileRef = 3B3967151E833CAA004F5970 /* AppFrameworkInfo.plist */; };
 		74858FAF1ED2DC5600515810 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 74858FAE1ED2DC5600515810 /* AppDelegate.swift */; };
-		853093242AB7DC2D0054A8FC /* ClashKit.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 858A7C5F28D05CC800B0ADA6 /* ClashKit.xcframework */; };
+		851513B02AB7E16D00229CD9 /* ClashKit.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 851513AF2AB7E16C00229CD9 /* ClashKit.xcframework */; };
+		851513B62AB7E1AC00229CD9 /* Tun2SocksKit in Frameworks */ = {isa = PBXBuildFile; productRef = 851513B52AB7E1AC00229CD9 /* Tun2SocksKit */; };
 		858A7C3C28D03DCB00B0ADA6 /* NetworkExtension.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 858A7C3B28D03DCB00B0ADA6 /* NetworkExtension.framework */; };
 		858A7C3F28D03DCB00B0ADA6 /* PacketTunnelProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 858A7C3E28D03DCB00B0ADA6 /* PacketTunnelProvider.swift */; };
 		858A7C4428D03DCB00B0ADA6 /* PacketTunnel.appex in Embed App Extensions */ = {isa = PBXBuildFile; fileRef = 858A7C3A28D03DCB00B0ADA6 /* PacketTunnel.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
@@ -56,13 +57,14 @@
 		74858FAE1ED2DC5600515810 /* AppDelegate.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		7AFA3C8E1D35360C0083082E /* Release.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; name = Release.xcconfig; path = Flutter/Release.xcconfig; sourceTree = "<group>"; };
 		7BF37F2D4853A0CA97E6B266 /* Pods-Runner.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Runner.release.xcconfig"; path = "Target Support Files/Pods-Runner/Pods-Runner.release.xcconfig"; sourceTree = "<group>"; };
+		851513AF2AB7E16C00229CD9 /* ClashKit.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; name = ClashKit.xcframework; path = ../../ios/ClashKit.xcframework; sourceTree = "<group>"; };
+		851513B22AB7E18300229CD9 /* Tun2SocksKit-main */ = {isa = PBXFileReference; lastKnownFileType = wrapper; name = "Tun2SocksKit-main"; path = "../../ios/Tun2SocksKit-main"; sourceTree = "<group>"; };
 		858A7C3A28D03DCB00B0ADA6 /* PacketTunnel.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = PacketTunnel.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 		858A7C3B28D03DCB00B0ADA6 /* NetworkExtension.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = NetworkExtension.framework; path = System/Library/Frameworks/NetworkExtension.framework; sourceTree = SDKROOT; };
 		858A7C3E28D03DCB00B0ADA6 /* PacketTunnelProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PacketTunnelProvider.swift; sourceTree = "<group>"; };
 		858A7C4028D03DCB00B0ADA6 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		858A7C4128D03DCB00B0ADA6 /* PacketTunnel.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = PacketTunnel.entitlements; sourceTree = "<group>"; };
 		858A7C4A28D03DEF00B0ADA6 /* Runner.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = Runner.entitlements; sourceTree = "<group>"; };
-		858A7C5F28D05CC800B0ADA6 /* ClashKit.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; path = ClashKit.xcframework; sourceTree = "<group>"; };
 		9740EEB21CF90195004384FC /* Debug.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; name = Debug.xcconfig; path = Flutter/Debug.xcconfig; sourceTree = "<group>"; };
 		9740EEB31CF90195004384FC /* Generated.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; name = Generated.xcconfig; path = Flutter/Generated.xcconfig; sourceTree = "<group>"; };
 		97C146EE1CF9000F007C117D /* Runner.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Runner.app; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -77,6 +79,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				851513B62AB7E1AC00229CD9 /* Tun2SocksKit in Frameworks */,
 				858A7C3C28D03DCB00B0ADA6 /* NetworkExtension.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -87,7 +90,7 @@
 			files = (
 				E6A4D69A699048CD6EECCF42 /* Pods_Runner.framework in Frameworks */,
 				858A7C4B28D03DF000B0ADA6 /* NetworkExtension.framework in Frameworks */,
-				853093242AB7DC2D0054A8FC /* ClashKit.xcframework in Frameworks */,
+				851513B02AB7E16D00229CD9 /* ClashKit.xcframework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -107,11 +110,19 @@
 		7049630B6FF56489B90E06D4 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
-				858A7C5F28D05CC800B0ADA6 /* ClashKit.xcframework */,
+				851513AF2AB7E16C00229CD9 /* ClashKit.xcframework */,
 				0F7020D1813CE0355EA93CE8 /* Pods_Runner.framework */,
 				858A7C3B28D03DCB00B0ADA6 /* NetworkExtension.framework */,
 			);
 			name = Frameworks;
+			sourceTree = "<group>";
+		};
+		851513B12AB7E18300229CD9 /* Packages */ = {
+			isa = PBXGroup;
+			children = (
+				851513B22AB7E18300229CD9 /* Tun2SocksKit-main */,
+			);
+			name = Packages;
 			sourceTree = "<group>";
 		};
 		858A7C3D28D03DCB00B0ADA6 /* PacketTunnel */ = {
@@ -138,6 +149,7 @@
 		97C146E51CF9000F007C117D = {
 			isa = PBXGroup;
 			children = (
+				851513B12AB7E18300229CD9 /* Packages */,
 				9740EEB11CF90186004384FC /* Flutter */,
 				97C146F01CF9000F007C117D /* Runner */,
 				858A7C3D28D03DCB00B0ADA6 /* PacketTunnel */,
@@ -189,6 +201,7 @@
 			);
 			name = PacketTunnel;
 			packageProductDependencies = (
+				851513B52AB7E1AC00229CD9 /* Tun2SocksKit */,
 			);
 			productName = PacketTunnel;
 			productReference = 858A7C3A28D03DCB00B0ADA6 /* PacketTunnel.appex */;
@@ -213,6 +226,8 @@
 				858A7C4328D03DCB00B0ADA6 /* PBXTargetDependency */,
 			);
 			name = Runner;
+			packageProductDependencies = (
+			);
 			productName = Runner;
 			productReference = 97C146EE1CF9000F007C117D /* Runner.app */;
 			productType = "com.apple.product-type.application";
@@ -789,6 +804,13 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		851513B52AB7E1AC00229CD9 /* Tun2SocksKit */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = Tun2SocksKit;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = 97C146E61CF9000F007C117D /* Project object */;
 }

@@ -2,6 +2,7 @@
 
 A new Flutter plugin based on my [ClashKit](https://github.com/LondonX/clash-kit) and my [Tun2Socks-Android](https://github.com/LondonX/tun2socks-android)  
 My `ClashKit` forked from [AppleClash/clash-apple](https://github.com/AppleClash/clash-apple), my `Tun2Socks-Android` forked from [universal-android-tun2socks](https://github.com/mokhtarabadi/universal-android-tun2socks)
+👍🏻Thanks [@netyouli](https://github.com/netyouli) and [Tun2SocksKit repo](https://github.com/arror/Tun2SocksKit) for iOS tun implementation.
 
 
 # Setup
@@ -14,30 +15,30 @@ dependencies:
 ```
 ### Android
 1. Requires minSdkVersion 21
-2. Copy `ClashKit.aar` into `<project-root>/android/app/`.
-3. Add `implementation files("ClashKit.aar")` in `<project-root>/android/app/build.gradle`'s dependencies section.
+2. Copy `ClashKit.aar` and `tun2socks.aar` into `<project-root>/android/app/`.
+3. Add `implementation files("ClashKit.aar")` and `implementation files("tun2socks.aar")` in `<project-root>/android/app/build.gradle`'s dependencies section.
 
 ### iOS
-1. Requires iOS 13 or newer.
-2. As `gomobile` stop supporting armv7a, you need to exlude this architecture in XCode.
-* Open `Runner.xcodeproj`, select `Runner` in `PROJECT` list on the left.
-* In `Build Settings`->`All`->`Architectures`, set value to `arm64`.
-* Add `ClashKit.xcframework` into `Runner`'s `Frameworks and Libraries` an select `Do Not Embed`.
-
-1. Modify `Runner.xcodeproj`
-* Open Runner's `Signing & Capabilities` tab.
-* You may need to enable `Network Extension` in [Apple Developer Account page](https://developer.apple.com/account/)/Certificates, IDs & Profiles/Identifiers/YOUR_BUNDLE_ID/Edit/Network Extensions checkbox, before add `Network Extension` and provision.
-* Add `Network Extension` and `Personal VPN`.
-* Check `App Proxy` and `Packet Tunnel` of `Network Extension`.
-
-1. Add project Target of `Network-Extension`
-* Create a Target named `PacketTunnel`, the XCode will auto create a file named `PacketTunnelProvider.swift`.
-* Open `PacketTunnel`'s `Signing & Capabilities` tab.
-* Add `Network Extension` and `Personal VPN`, just as step 3.
-* Modify `PacketTunnelProvider.swift` by paste from [Example's PacketTunnelProvider.swfit](example/ios/PacketTunnel/PacketTunnelProvider.swift)
-
-1. Add app group
-* Create a App Group named `group.<yourBundleId>` both in `Runner` and `PacketTunnel` Target.
+1. Requires iOS 13 or newer. ≥15 is recommended because os iOS memory limitation of packet tunnel
+2. As `gomobile` stop supporting armv7a, you need to exclude this architecture in XCode.
+   * Open `Runner.xcodeproj`, select `Runner` in `PROJECT` list on the left.
+   * In `Build Settings`->`All`->`Architectures`, set value to `arm64`.
+   * Add `ClashKit.xcframework` into `Runner`'s `Frameworks and Libraries` an select `Do Not Embed`.
+   * Add `Tun2SocksKit-main` by `Swift Package Manager (SPM)` from https://github.com/arror/Tun2SocksKit or `<project-root>/ios/Tun2SocksKit-main`.
+   * Add `Tun2SocksKit` lib into `Frameworks and Libraries` of `PacketTunnel` target.
+   * (Optional) Add `HevSocks5Tunnel.xcframework`
+3. Modify `Runner.xcodeproj`
+   * Open Runner's `Signing & Capabilities` tab.
+   * You may need to enable `Network Extension` in [Apple Developer Account page](https://developer.apple.com/account/)/Certificates, IDs & Profiles/Identifiers/YOUR_BUNDLE_ID/Edit/Network Extensions checkbox, before add `Network Extension` and provision.
+   * Add `Network Extension` and `Personal VPN`.
+   * Check `App Proxy` and `Packet Tunnel` of `Network Extension`.
+4. Add project Target of `Network-Extension`
+   * Create a Target named `PacketTunnel`, the XCode will auto create a file named `PacketTunnelProvider.swift`.
+   * Open `PacketTunnel`'s `Signing & Capabilities` tab.
+   * Add `Network Extension` and `Personal VPN`, just as step 3.
+   * Modify `PacketTunnelProvider.swift` by paste from [Example's PacketTunnelProvider.swfit](example/ios/PacketTunnel/PacketTunnelProvider.swift)
+5. Add app group
+   * Create a App Group named `group.<yourBundleId>` both in `Runner` and `PacketTunnel` Target.
   
 
 # Basic usage

@@ -1,0 +1,171 @@
+name: Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Release version'     
+        required: true
+        type: string
+
+jobs:
+  release:
+    runs-on: macOS-12
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/checkout@v3
+        with:
+          repository: 'heiher/hev-socks5-tunnel'
+          submodules: 'true'
+          path: 'temp'
+      - uses: actions/checkout@v3
+        with:
+          repository: 'arror/hev-socks5-tunnel-iphonesimulator'
+          path: 'fake'
+          
+      - name: build macos arm64_x86_64
+        run: |
+          mkdir macos_arm64_x86_64
+          mkdir macos_arm64_x86_64/macos_arm64
+          mkdir macos_arm64_x86_64/macos_x86_64
+          cd temp
+          make clean
+          make PP=g++ \
+               CC=gcc \
+               CFLAGS="-arch x86_64 -mmacosx-version-min=12.0" \
+               LFLAGS="-arch x86_64 -mmacosx-version-min=12.0 -Wl,-Bsymbolic-functions" static
+          libtool -static -o ../macos_arm64_x86_64/macos_x86_64/libhev-socks5-tunnel.a \
+                  bin/libhev-socks5-tunnel.a \
+                  third-part/lwip/bin/liblwip.a \
+                  third-part/yaml/bin/libyaml.a \
+                  third-part/hev-task-system/bin/libhev-task-system.a
+          make clean
+          make clean
+          make PP=g++ \
+               CC=gcc \
+               CFLAGS="-arch arm64 -mmacosx-version-min=12.0" \
+               LFLAGS="-arch arm64 -mmacosx-version-min=12.0 -Wl,-Bsymbolic-functions" static
+          libtool -static -o ../macos_arm64_x86_64/macos_arm64/libhev-socks5-tunnel.a \
+                  bin/libhev-socks5-tunnel.a \
+                  third-part/lwip/bin/liblwip.a \
+                  third-part/yaml/bin/libyaml.a \
+                  third-part/hev-task-system/bin/libhev-task-system.a
+          cd ../macos_arm64_x86_64
+          lipo -create -o ./libhev-socks5-tunnel.a ./macos_arm64/libhev-socks5-tunnel.a ./macos_x86_64/libhev-socks5-tunnel.a
+
+      - name: build maccatalyst arm64_x86_64
+        run: |
+          mkdir maccatalyst_arm64_x86_64
+          mkdir maccatalyst_arm64_x86_64/maccatalyst_arm64
+          mkdir maccatalyst_arm64_x86_64/maccatalyst_x86_64
+          cd temp
+          make clean
+          make PP=g++ \
+               CC=gcc \
+               CFLAGS="-arch x86_64 -target x86_64-apple-ios13.1-macabi" \
+               LFLAGS="-arch x86_64 -target x86_64-apple-ios13.1-macabi -Wl,-Bsymbolic-functions" static
+          libtool -static -o ../maccatalyst_arm64_x86_64/maccatalyst_x86_64/libhev-socks5-tunnel.a \
+                  bin/libhev-socks5-tunnel.a \
+                  third-part/lwip/bin/liblwip.a \
+                  third-part/yaml/bin/libyaml.a \
+                  third-part/hev-task-system/bin/libhev-task-system.a
+          make clean
+          make PP=g++ \
+               CC=gcc \
+               CFLAGS="-arch arm64 -target arm64-apple-ios13.1-macabi" \
+               LFLAGS="-arch arm64 -target arm64-apple-ios13.1-macabi -Wl,-Bsymbolic-functions" static
+          libtool -static -o ../maccatalyst_arm64_x86_64/maccatalyst_arm64/libhev-socks5-tunnel.a \
+                  bin/libhev-socks5-tunnel.a \
+                  third-part/lwip/bin/liblwip.a \
+                  third-part/yaml/bin/libyaml.a \
+                  third-part/hev-task-system/bin/libhev-task-system.a
+          cd ../maccatalyst_arm64_x86_64
+          lipo -create -o ./libhev-socks5-tunnel.a ./maccatalyst_arm64/libhev-socks5-tunnel.a ./maccatalyst_x86_64/libhev-socks5-tunnel.a
+
+      - name: build iphoneos arm64
+        run: |
+          mkdir iphoneos_arm64
+          cd temp
+          make clean
+          make PP="xcrun --sdk iphoneos --toolchain iphoneos clang" \
+               CC="xcrun --sdk iphoneos --toolchain iphoneos clang" \
+               CFLAGS="-arch arm64 -mios-version-min=12.0" \
+               LFLAGS="-arch arm64 -mios-version-min=12.0 -Wl,-Bsymbolic-functions" static
+          libtool -static -o ../iphoneos_arm64/libhev-socks5-tunnel.a \
+                  bin/libhev-socks5-tunnel.a \
+                  third-part/lwip/bin/liblwip.a \
+                  third-part/yaml/bin/libyaml.a \
+                  third-part/hev-task-system/bin/libhev-task-system.a
+          make clean
+          
+      - name: build iphonesimulator arm64_x86_64
+        run: |
+          mkdir iphonesimulator_arm64_x86_64
+          mkdir iphonesimulator_arm64_x86_64/iphonesimulator_arm64
+          mkdir iphonesimulator_arm64_x86_64/iphonesimulator_x86_64
+          cd fake
+          make clean
+          make PP="xcrun -sdk iphonesimulator clang" \
+               CC="xcrun -sdk iphonesimulator clang" \
+               CFLAGS="-arch arm64 -mios-simulator-version-min=12.0" \
+               LFLAGS="-arch arm64 -mios-simulator-version-min=12.0 -Wl,-Bsymbolic-functions" static
+          cp bin/libhev-socks5-tunnel.a ../iphonesimulator_arm64_x86_64/iphonesimulator_arm64/libhev-socks5-tunnel.a
+          make clean
+          make PP="xcrun -sdk iphonesimulator clang" \
+               CC="xcrun -sdk iphonesimulator clang" \
+               CFLAGS="-arch x86_64 -mios-simulator-version-min=12.0" \
+               LFLAGS="-arch x86_64 -mios-simulator-version-min=12.0 -Wl,-Bsymbolic-functions" static
+          cp bin/libhev-socks5-tunnel.a ../iphonesimulator_arm64_x86_64/iphonesimulator_x86_64/libhev-socks5-tunnel.a
+          make clean
+          cd ../iphonesimulator_arm64_x86_64
+          lipo -create -o ./libhev-socks5-tunnel.a ./iphonesimulator_arm64/libhev-socks5-tunnel.a ./iphonesimulator_x86_64/libhev-socks5-tunnel.a
+          
+      - name: Build xcframework
+        run: |
+          mkdir include
+          cp temp/src/hev-main.h include/hev-socks5-tunnel.h
+          cp ./Templates/HevSocks5Tunnel.template include/module.modulemap
+          xcodebuild -create-xcframework \
+                     -library ./iphoneos_arm64/libhev-socks5-tunnel.a \
+                     -headers ./include \
+                     -library ./iphonesimulator_arm64_x86_64/libhev-socks5-tunnel.a \
+                     -headers ./include \
+                     -library ./macos_arm64_x86_64/libhev-socks5-tunnel.a \
+                     -headers ./include \
+                     -library ./maccatalyst_arm64_x86_64/libhev-socks5-tunnel.a \
+                     -headers ./include \
+                     -output ./HevSocks5Tunnel.xcframework
+          zip -r HevSocks5Tunnel.xcframework.zip HevSocks5Tunnel.xcframework
+          
+      - name: Rende Template
+        run: |
+          export TEMP=`shasum -a 256 ./HevSocks5Tunnel.xcframework.zip`
+          export CHECKSUM=${TEMP:0:64}
+          cd Templates
+          sed -i "_bak" "s/VERSION/${{ github.event.inputs.version }}/g" Package.template
+          sed -i "_bak" "s/CHECKSUM/${CHECKSUM}/g" Package.template
+          
+      - name: Update Package.swift
+        run: |
+          rm -f Package.swift
+          cp ./Templates/Package.template Package.swift
+          
+      - uses: stefanzweifel/git-auto-commit-action@v4
+        with:
+          commit_message: Tun2SocksKit Release ${{ github.event.inputs.version }}!!!
+          commit_user_name: Arror
+          commit_user_email: hallo.maqiang@icloud.com
+          commit_author: Arror <hallo.maqiang@icloud.com>
+          tagging_message: ${{ github.event.inputs.version }}
+          file_pattern: 'Package.swift'
+          
+      - name: Upload Release
+        uses: softprops/action-gh-release@v1
+        with:
+          draft: false
+          tag_name: ${{ github.event.inputs.version }}
+          files: ./HevSocks5Tunnel.xcframework.zip
+
+
+
+

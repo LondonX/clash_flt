@@ -77,7 +77,9 @@ public final class VPNManager: ObservableObject {
         config.serverAddress = "Clash"
         config.disconnectOnSleep = false
         if #available(iOS 14.2, *) {
+            config.providerConfiguration = [:]
             config.excludeLocalNetworks = true
+            config.includeAllNetworks = true
         }
         manager.protocolConfiguration = config
         manager.isEnabled = true

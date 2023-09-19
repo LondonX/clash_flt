@@ -3,9 +3,11 @@
 //  PacketTunnel
 //
 //  Created by LondonX on 2022/9/13.
+//  Update on 2023/9/19
 //
 import NetworkExtension
 import ClashKit
+import Tun2SocksKit
 
 class PacketTunnelProvider: NEPacketTunnelProvider {
     private var trafficTotalUp: Int64 = 0
@@ -41,13 +43,27 @@ class PacketTunnelProvider: NEPacketTunnelProvider {
         }
         let generalJson = String(data: ClashKit.ClashGetConfigGeneral()!, encoding: .utf8)
         let general = jsonToDictionary(generalJson)
-        osLog("startTunnel with config: \(String(describing: (generalJson)))")
+        osLog("Clash started with config: \(String(describing: (generalJson)))")
         let port = general?["port"] as? Int ?? 7890
+        let socksPort = general?["socks-port"] as? Int ?? 7891
         let host = "127.0.0.1"
         try await self.setTunnelNetworkSettings(initTunnelSettings(proxyHost: host, proxyPort: port))
+        
+        // start TUN
+        Task.init {
+            let tunConfigFile = saveTunnelConfigToFile(socksPort: socksPort)
+            do {
+                let tunConfig = try String(contentsOf: tunConfigFile, encoding: .utf8)
+                osLog("tunConfig: \(tunConfig)")
+            }catch{
+                fatalError("cannot read tunConfigFile")
+            }
+            osLog("Socks5Tunnel.run: \(Socks5Tunnel.run(withConfig: tunConfigFile.path))")
+        }
     }
     
     override func stopTunnel(with reason: NEProviderStopReason) async {
+        Socks5Tunnel.quit()
     }
     
     override func handleAppMessage(_ messageData: Data) async -> Data? {
@@ -99,7 +115,8 @@ class PacketTunnelProvider: NEPacketTunnelProvider {
         }
         let configOverride = """
         \(config!)
-        allow-lan: false
+        allow-lan: true
+        ipv6: true
         """
         if (appliedCfg != configOverride) {
             osLog("config changed, calling ClashKit.ClashSetup.")
@@ -116,36 +133,27 @@ class PacketTunnelProvider: NEPacketTunnelProvider {
     
     private func initTunnelSettings(proxyHost: String, proxyPort: Int) -> NEPacketTunnelNetworkSettings {
         let settings = NEPacketTunnelNetworkSettings(tunnelRemoteAddress: "254.1.1.1")
-        settings.mtu = 1440
-        
-        /* proxy settings */
-        let proxySettings = NEProxySettings()
-        proxySettings.httpServer = NEProxyServer(
-            address: proxyHost,
-            port: proxyPort
-        )
-        proxySettings.httpsServer = NEProxyServer(
-            address: proxyHost,
-            port: proxyPort
-        )
-        proxySettings.httpEnabled = true
-        proxySettings.httpsEnabled = true
-        proxySettings.exceptionList = [
-            "192.168.0.0/16",
-            "10.0.0.0/8",
-            "172.16.0.0/12",
-            "127.0.0.1",
-            "localhost",
-            "*.local"
-        ]
-        proxySettings.matchDomains = [""]
-        
-        let ipv4Settings = NEIPv4Settings(
-            addresses: ["198.18.0.1", "0.0.0.0"],
-            subnetMasks: ["255.255.0.0"]
-        )
-        settings.ipv4Settings = ipv4Settings
-        settings.proxySettings = proxySettings
+        settings.mtu = 9000
+        settings.ipv4Settings = {
+            let settings = NEIPv4Settings(addresses: ["198.18.0.1"], subnetMasks: ["255.255.0.0"])
+            settings.includedRoutes = [NEIPv4Route.default()]
+            return settings
+        }()
+        settings.ipv6Settings = {
+            let settings = NEIPv6Settings(addresses: ["fd6e:a81b:704f:1211::1"], networkPrefixLengths: [64])
+            settings.includedRoutes = [NEIPv6Route.default()]
+            return settings
+        }()
+        settings.dnsSettings = NEDNSSettings(servers: ["1.1.1.1"])
+        settings.proxySettings = {
+            let settings = NEProxySettings();
+            settings.httpServer = NEProxyServer(address: "::1", port: proxyPort)
+            settings.httpsServer = NEProxyServer(address: "::1", port: proxyPort)
+            settings.httpEnabled = true
+            settings.httpsEnabled = true
+            settings.matchDomains = [""]
+            return settings
+        }()
         return settings
     }
 }
@@ -163,6 +171,37 @@ class AppClashClient: NSObject, ClashClientProtocol {
     
     func traffic(_ up: Int64, down: Int64) {
         trafficListener(up, down)
+    }
+}
+
+private func saveTunnelConfigToFile(socksPort: Int) -> URL {
+    let content = """
+    tunnel:
+      mtu: 9000
+
+    socks5:
+      port: \(socksPort)
+      address: ::1
+      udp: 'udp'
+
+    misc:
+      task-stack-size: 20480
+      connect-timeout: 5000
+      read-write-timeout: 60000
+      log-file: stderr
+      log-level: info
+      limit-nofile: 65535
+    """
+    if let documentsDirectory = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first {
+        let fileURL = documentsDirectory.appendingPathComponent("tunnel_config.yaml")
+        do {
+            try content.write(to: fileURL, atomically: true, encoding: .utf8)
+            return fileURL
+        } catch {
+            fatalError("Error writing to file: \(error)")
+        }
+    } else {
+        fatalError("Error finding the documents directory.")
     }
 }
 
