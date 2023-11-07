@@ -79,7 +79,7 @@ public final class VPNManager: ObservableObject {
         if #available(iOS 14.2, *) {
             config.providerConfiguration = [:]
             config.excludeLocalNetworks = true
-            config.includeAllNetworks = true
+//            config.includeAllNetworks = true
         }
         manager.protocolConfiguration = config
         manager.isEnabled = true

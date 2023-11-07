@@ -85,15 +85,13 @@ public class SwiftClashFltPlugin: NSObject, FlutterPlugin {
         case "startClash":
             Task.init {
                 do {
-                    var controller = await vpnManager.loadController()
+                    try await vpnManager.installVPNConfiguration()
+                    let controller = await vpnManager.loadController()
                     if(controller == nil) {
-                        try await vpnManager.installVPNConfiguration()
-                        controller = await vpnManager.loadController()
-                        if(controller == nil) {
-                            result(false)
-                            return
-                        }
+                        result(false)
+                        return
                     }
+                    try await Task.sleep(nanoseconds: 100_000_000)//0.1s
                     try await controller?.startVPN()
                 } catch {
                     result(false)
