@@ -60,7 +60,8 @@ Future<Duration?> _healthCheck(Proxy proxy) async {
     }
     final delay = pingData.response?.time;
     if (delay != null) {
-      proxy.delay = delay * 1000;
+      // fix: https://github.com/point-source/dart_ping/issues/58
+      proxy.delay = delay * (Platform.isAndroid ? 1000 : 1);
     }
     return proxy.delay;
   } catch (e) {
