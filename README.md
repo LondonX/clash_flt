@@ -2,7 +2,7 @@
 
 A new Flutter plugin based on my [ClashKit](https://github.com/LondonX/clash-kit) and my [Tun2Socks-Android](https://github.com/LondonX/tun2socks-android)  
 My `ClashKit` forked from [AppleClash/clash-apple](https://github.com/AppleClash/clash-apple), my `Tun2Socks-Android` forked from [universal-android-tun2socks](https://github.com/mokhtarabadi/universal-android-tun2socks)
-👍🏻Thanks [@netyouli](https://github.com/netyouli) and [Tun2SocksKit repo](https://github.com/arror/Tun2SocksKit) for iOS tun implementation.
+👍🏻Thanks [@netyouli](https://github.com/netyouli) and [Tun2SocksKit repo](https://github.com/EbrahimTahernejad/Tun2SocksKit) for iOS tun implementation.
 
 
 # Setup
@@ -24,7 +24,7 @@ dependencies:
    * Open `Runner.xcodeproj`, select `Runner` in `PROJECT` list on the left.
    * In `Build Settings`->`All`->`Architectures`, set value to `arm64`.
    * Add `ClashKit.xcframework` into `Runner`'s `Frameworks and Libraries` an select `Do Not Embed`.
-   * Add `Tun2SocksKit-main` by `Swift Package Manager (SPM)` from https://github.com/arror/Tun2SocksKit or `<project-root>/ios/Tun2SocksKit-main`.
+   * Add `Tun2SocksKit-main` by `Swift Package Manager (SPM)` from https://github.com/EbrahimTahernejad/Tun2SocksKit or `<project-root>/ios/Tun2SocksKit-main`.
    * Add `Tun2SocksKit` lib into `Frameworks and Libraries` of `PacketTunnel` target.
    * (Optional) Add `HevSocks5Tunnel.xcframework`
 3. Modify `Runner.xcodeproj`
