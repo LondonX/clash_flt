@@ -3,7 +3,7 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 52;
+	objectVersion = 54;
 	objects = {
 
 /* Begin PBXBuildFile section */
@@ -58,7 +58,6 @@
 		7AFA3C8E1D35360C0083082E /* Release.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; name = Release.xcconfig; path = Flutter/Release.xcconfig; sourceTree = "<group>"; };
 		7BF37F2D4853A0CA97E6B266 /* Pods-Runner.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Runner.release.xcconfig"; path = "Target Support Files/Pods-Runner/Pods-Runner.release.xcconfig"; sourceTree = "<group>"; };
 		851513AF2AB7E16C00229CD9 /* ClashKit.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; name = ClashKit.xcframework; path = ../../ios/ClashKit.xcframework; sourceTree = "<group>"; };
-		851513B22AB7E18300229CD9 /* Tun2SocksKit-main */ = {isa = PBXFileReference; lastKnownFileType = wrapper; name = "Tun2SocksKit-main"; path = "../../ios/Tun2SocksKit-main"; sourceTree = "<group>"; };
 		858A7C3A28D03DCB00B0ADA6 /* PacketTunnel.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = PacketTunnel.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 		858A7C3B28D03DCB00B0ADA6 /* NetworkExtension.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = NetworkExtension.framework; path = System/Library/Frameworks/NetworkExtension.framework; sourceTree = SDKROOT; };
 		858A7C3E28D03DCB00B0ADA6 /* PacketTunnelProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PacketTunnelProvider.swift; sourceTree = "<group>"; };
@@ -120,7 +119,6 @@
 		851513B12AB7E18300229CD9 /* Packages */ = {
 			isa = PBXGroup;
 			children = (
-				851513B22AB7E18300229CD9 /* Tun2SocksKit-main */,
 			);
 			name = Packages;
 			sourceTree = "<group>";
@@ -261,6 +259,7 @@
 			);
 			mainGroup = 97C146E51CF9000F007C117D;
 			packageReferences = (
+				85ED1FCC2B6C93CC00553D8F /* XCRemoteSwiftPackageReference "Tun2SocksKit" */,
 			);
 			productRefGroup = 97C146EF1CF9000F007C117D /* Products */;
 			projectDirPath = "";
@@ -804,6 +803,17 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		85ED1FCC2B6C93CC00553D8F /* XCRemoteSwiftPackageReference "Tun2SocksKit" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/EbrahimTahernejad/Tun2SocksKit";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 3.6.4;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
 		851513B52AB7E1AC00229CD9 /* Tun2SocksKit */ = {
