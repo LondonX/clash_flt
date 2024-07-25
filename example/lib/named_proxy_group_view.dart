@@ -68,7 +68,7 @@ class _NamedProxyGroupViewState extends State<NamedProxyGroupView> {
         ClashFlt.instance.isProxySelectable(widget.group, proxy);
     return ProxyView(
       proxy: proxy,
-      isActived: isSelected,
+      isActive: isSelected,
       onTap: isSelectable ? _selectProxy : null,
       healthCheck: _healthCheck,
     );

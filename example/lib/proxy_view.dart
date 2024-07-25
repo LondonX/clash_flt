@@ -3,13 +3,13 @@ import 'package:flutter/material.dart';
 
 class ProxyView extends StatelessWidget {
   final Proxy proxy;
-  final bool isActived;
+  final bool isActive;
   final Function(Proxy)? onTap;
   final Function(Proxy) healthCheck;
   const ProxyView({
     Key? key,
     required this.proxy,
-    required this.isActived,
+    required this.isActive,
     required this.onTap,
     required this.healthCheck,
   }) : super(key: key);
@@ -35,7 +35,7 @@ class ProxyView extends StatelessWidget {
                   children: [
                     Text(proxy.name),
                     const SizedBox(height: 8),
-                    Text(proxy.type, style: textTheme.caption),
+                    Text(proxy.type, style: textTheme.bodySmall),
                     const SizedBox(height: 8),
                     Text(
                       proxy.delay == null
@@ -51,7 +51,7 @@ class ProxyView extends StatelessWidget {
                 },
                 icon: const Icon(Icons.timer_outlined),
               ),
-              if (isActived)
+              if (isActive)
                 Icon(
                   Icons.check,
                   color: Theme.of(context).colorScheme.primary,
